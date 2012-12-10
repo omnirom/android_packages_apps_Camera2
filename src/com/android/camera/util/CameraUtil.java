@@ -172,6 +172,12 @@ public class CameraUtil {
     // For setting video size before recording starts
     private static boolean sEarlyVideoSize;
 
+    // Samsung camcorder mode
+    private static boolean sSamsungCamMode;
+
+    // HTC camcorder mode
+    private static boolean sHTCCamMode;
+
     private CameraUtil() {
     }
 
@@ -185,6 +191,8 @@ public class CameraUtil {
                 context.getString(R.string.image_file_name_format));
 
         sEarlyVideoSize = context.getResources().getBoolean(R.bool.needsEarlyVideoSize);
+        sSamsungCamMode = context.getResources().getBoolean(R.bool.needsSamsungCamMode);
+        sHTCCamMode = context.getResources().getBoolean(R.bool.needsHTCCamMode);
     }
 
     public static int dpToPixel(int dp) {
@@ -193,6 +201,14 @@ public class CameraUtil {
 
     public static boolean needsEarlyVideoSize() {
         return sEarlyVideoSize;
+    }
+
+    public static boolean useHTCCamMode() {
+        return sHTCCamMode;
+    }
+
+    public static boolean useSamsungCamMode() {
+        return sSamsungCamMode;
     }
 
     // Rotates the bitmap by the specified degree.

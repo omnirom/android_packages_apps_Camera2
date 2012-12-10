@@ -24,4 +24,8 @@
     <!-- Ignore preferred preview size and use best value from supported preview sizes
          Setting both this and the above option true will always use values from preview sizes for both -->
     <bool name="ignorePreferredPreviewSizeForVideo">false</bool>
+    <!-- Samsung Camcorder Mode -->
+    <bool name="needsSamsungCamMode">false</bool>
+    <!-- HTC Camcorder Mode -->
+    <bool name="needsHTCCamMode">false</bool>
 </resources>
