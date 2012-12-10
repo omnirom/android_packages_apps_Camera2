@@ -159,6 +159,9 @@ public class CameraUtil {
     // Samsung camcorder mode
     private static boolean sSamsungCamMode;
 
+    // HTC camcorder mode
+    private static boolean sHTCCamMode;
+
     // For setting video size before recording starts
     private static boolean sEarlyVideoSize;
 
@@ -173,12 +176,19 @@ public class CameraUtil {
         sPixelDensity = metrics.density;
         sImageFileNamer = new ImageFileNamer(
                 context.getString(R.string.image_file_name_format));
+
+        // These come from the config, but are needed before parameters are set.
         sSamsungCamMode = context.getResources().getBoolean(R.bool.needsSamsungCamMode);
+        sHTCCamMode = context.getResources().getBoolean(R.bool.needsHTCCamMode);
         sEarlyVideoSize = context.getResources().getBoolean(R.bool.needsEarlyVideoSize);
     }
 
     public static int dpToPixel(int dp) {
         return Math.round(sPixelDensity * dp);
+    }
+
+    public static boolean useHTCCamMode() {
+        return sHTCCamMode;
     }
 
     public static boolean useSamsungCamMode() {
