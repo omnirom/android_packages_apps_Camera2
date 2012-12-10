@@ -21,6 +21,8 @@
     <integer name="max_video_recording_length">0</integer>
     <!-- Samsung Camcorder Mode -->
     <bool name="needsSamsungCamMode">false</bool>
+    <!-- HTC Camcorder Mode -->
+    <bool name="needsHTCCamMode">false</bool>
     <!-- Allows setting video size before recording starts -->
     <bool name="needsEarlyVideoSize">false</bool>
     <!-- Always use preferred preview size path for effects recording instead of the display resolution -->
