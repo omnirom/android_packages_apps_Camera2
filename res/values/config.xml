@@ -28,4 +28,6 @@
     <!-- Ignore preferred preview size and use best value from supported preview sizes
          Setting both this and the above option true will always use values from preview sizes for both -->
     <bool name="ignorePreferredPreviewSizeForVideo">false</bool>
+    <!-- Allows setting video size before recording starts -->	26
+    <bool name="needsEarlyVideoSize">false</bool>
 </resources>
