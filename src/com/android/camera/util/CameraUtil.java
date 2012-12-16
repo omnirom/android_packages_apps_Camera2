@@ -165,6 +165,12 @@ public class CameraUtil {
     // For setting video size before recording starts
     private static boolean sEarlyVideoSize;
 
+    // Workaround for QC cameras with broken face detection on front camera
+    private static boolean sNoFaceDetectOnFrontCamera;
+
+    // Samsung ZSL mode
+    private static boolean sEnableZSL;
+
     private CameraUtil() {
     }
 
@@ -181,6 +187,8 @@ public class CameraUtil {
         sSamsungCamMode = context.getResources().getBoolean(R.bool.needsSamsungCamMode);
         sHTCCamMode = context.getResources().getBoolean(R.bool.needsHTCCamMode);
         sEarlyVideoSize = context.getResources().getBoolean(R.bool.needsEarlyVideoSize);
+        sEnableZSL = context.getResources().getBoolean(R.bool.enableZSL);
+        sNoFaceDetectOnFrontCamera = context.getResources().getBoolean(R.bool.noFaceDetectOnFrontCamera);
     }
 
     public static int dpToPixel(int dp) {
@@ -193,6 +201,18 @@ public class CameraUtil {
 
     public static boolean useSamsungCamMode() {
         return sSamsungCamMode;
+    }
+
+    public static boolean needsEarlyVideoSize() {
+        return sEarlyVideoSize;
+    }
+
+    public static boolean enableZSL() {
+        return sEnableZSL;
+    }
+
+    public static boolean noFaceDetectOnFrontCamera() {
+        return sNoFaceDetectOnFrontCamera;
     }
 
     // Rotates the bitmap by the specified degree.
@@ -1005,7 +1025,19 @@ public class CameraUtil {
         return ret;
     }
 
-    public static boolean needsEarlyVideoSize() {
-        return sEarlyVideoSize;
+    /**
+     * Launches apps supporting action {@link Intent.ACTION_MAIN} of category
+     * {@link Intent.CATEGORY_APP_GALLERY}. Note that
+     * {@link Intent.CATEGORY_APP_GALLERY} is only available on API level 15+.
+     *
+     * @param ctx The {@link android.content.Context} to launch the app.
+     * @return {@code true} on success.
+     */
+    public static boolean launchGallery(Context ctx) {
+        if (ApiHelper.HAS_APP_GALLERY) {
+            ctx.startActivity(IntentHelper.getGalleryIntent(ctx));
+            return true;
+        }
+        return false;
     }
 }
