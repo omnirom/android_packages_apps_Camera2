@@ -167,6 +167,7 @@ public class PhotoMenu extends PieController
         mOtherKeys = new String[] {
                 CameraSettings.KEY_STORAGE,
                 CameraSettings.KEY_SLOW_SHUTTER,
+                CameraSettings.KEY_REDEYE_REDUCTION,
         };
 
         if (!isEmptyMenu(mPreferenceGroup, mOtherKeys)){
