@@ -120,4 +120,10 @@
             camera:title="@string/pref_camera_slow_shutter_title"
             camera:entries="@array/pref_camera_slow_shutter_entries"
             camera:entryValues="@array/pref_camera_slow_shutter_entryvalues" />
+    <ListPreference
+            camera:key="pref_camera_redeyereduction_key"
+            camera:defaultValue="@string/pref_camera_redeyereduction_default"
+            camera:title="@string/pref_camera_redeyereduction_title"
+            camera:entries="@array/pref_camera_redeyereduction_entries"
+            camera:entryValues="@array/pref_camera_redeyereduction_entryvalues" />
 </PreferenceGroup>
