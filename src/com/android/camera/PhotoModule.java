@@ -1780,6 +1780,15 @@ public class PhotoModule
             mSlowShutterTimeMillSecs = CameraSettings.getSlowShutterMilliSecs(mActivity, value);
         }
 
+        // Set Redeye Reduction
+        String redeyeReduction = mPreferences.getString(
+                CameraSettings.KEY_REDEYE_REDUCTION,
+                mActivity.getString(R.string.pref_camera_redeyereduction_default));
+        if (CameraUtil.isSupported(redeyeReduction,
+            mParameters.getSupportedRedeyeReductionModes())) {
+            mParameters.setRedeyeReductionMode(redeyeReduction);
+        }
+
         if (CameraUtil.enableZSL()) {
             // Switch on ZSL mode
             mParameters.set("camera-mode", "1");

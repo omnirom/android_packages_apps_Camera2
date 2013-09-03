@@ -73,6 +73,7 @@ public class CameraSettings {
     public static final String KEY_STORAGE = "pref_camera_storage_key";
     public static final String KEY_BURST_MODE = "pref_camera_burst_key";
     public static final String KEY_SLOW_SHUTTER = "pref_camera_slow_shutter";
+    public static final String KEY_REDEYE_REDUCTION = "pref_camera_redeyereduction_key";
 
     public static final String EXPOSURE_DEFAULT_VALUE = "0";
 
@@ -182,6 +183,7 @@ public class CameraSettings {
         ListPreference cameraHdrPlus = group.findPreference(KEY_CAMERA_HDR_PLUS);
         ListPreference storage = group.findPreference(KEY_STORAGE);
         ListPreference slowShutter = group.findPreference(KEY_SLOW_SHUTTER);
+        ListPreference redeyeReduction = group.findPreference(KEY_REDEYE_REDUCTION);
 
         // Since the screen could be loaded from different resources, we need
         // to check if the preference is available here
@@ -245,6 +247,10 @@ public class CameraSettings {
                     removePreference(group, slowShutter.getKey());
                 }
             }
+        }
+        if (redeyeReduction != null) {
+            filterUnsupportedOptions(group,
+                    redeyeReduction, mParameters.getSupportedRedeyeReductionModes());
         }
 
         int frontCameraId = CameraHolder.instance().getFrontCameraId();
