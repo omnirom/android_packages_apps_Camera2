@@ -2112,6 +2112,10 @@ public class VideoModule implements CameraModule,
         mParameters.setJpegQuality(jpegQuality);
         //Call Qcom related Camera Parameters
         qcomSetCameraParameters();
+
+        // Set video size before recording starts
+        CameraSettings.setEarlyVideoSize(mParameters, mProfile);
+
         mCameraDevice.setParameters(mParameters);
         // Keep preview size up to date.
         mParameters = mCameraDevice.getParameters();
