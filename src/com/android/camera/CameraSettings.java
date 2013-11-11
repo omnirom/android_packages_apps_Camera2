@@ -499,4 +499,16 @@ public class CameraSettings {
         }
         return supported;
     }
+
+    /**
+     * Set video size for certain cameras.
+     *
+     * @param params
+     * @param profile
+     */
+    public static void setEarlyVideoSize(Parameters params, CamcorderProfile profile) {
+        if (CameraUtil.needsEarlyVideoSize()) {
+            params.set("video-size", profile.videoFrameWidth + "x" + profile.videoFrameHeight);
+        }
+    }
 }

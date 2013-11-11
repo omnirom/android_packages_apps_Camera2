@@ -156,6 +156,9 @@ public class CameraUtil {
     private static float sPixelDensity = 1;
     private static ImageFileNamer sImageFileNamer;
 
+    // For setting video size before recording starts
+    private static boolean sEarlyVideoSize;
+
     private CameraUtil() {
     }
 
@@ -167,6 +170,8 @@ public class CameraUtil {
         sPixelDensity = metrics.density;
         sImageFileNamer = new ImageFileNamer(
                 context.getString(R.string.image_file_name_format));
+
+        sEarlyVideoSize = context.getResources().getBoolean(R.bool.needsEarlyVideoSize);
     }
 
     public static int dpToPixel(int dp) {
@@ -967,5 +972,9 @@ public class CameraUtil {
             return true;
         }
         return false;
+    }
+
+    public static boolean needsEarlyVideoSize() {
+        return sEarlyVideoSize;
     }
 }

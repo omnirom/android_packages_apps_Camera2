@@ -1526,6 +1526,9 @@ public class VideoModule implements CameraModule,
                 CameraProfile.QUALITY_HIGH);
         mParameters.setJpegQuality(jpegQuality);
 
+        // Set video size before recording starts
+        CameraSettings.setEarlyVideoSize(mParameters, mProfile);
+
         mCameraDevice.setParameters(mParameters);
         // Keep preview size up to date.
         mParameters = mCameraDevice.getParameters();
