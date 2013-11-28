@@ -541,6 +541,12 @@ public class CameraSettings {
         if (CamcorderProfile.hasProfile(cameraId, CamcorderProfile.QUALITY_HIGH)) {
             supported.add(Integer.toString(CamcorderProfile.QUALITY_HIGH));
         }
+        if (CamcorderProfile.hasProfile(cameraId, CamcorderProfile.QUALITY_4kDCI)) {
+            supported.add(Integer.toString(CamcorderProfile.QUALITY_4kDCI));
+        }
+        if (CamcorderProfile.hasProfile(cameraId, CamcorderProfile.QUALITY_4kUHD)) {
+            supported.add(Integer.toString(CamcorderProfile.QUALITY_4kUHD));
+        }
         if (CamcorderProfile.hasProfile(cameraId, CamcorderProfile.QUALITY_1080P)) {
             supported.add(Integer.toString(CamcorderProfile.QUALITY_1080P));
         }
