@@ -28,4 +28,7 @@
     <!-- Ignore preferred preview size and use best value from supported preview sizes
          Setting both this and the above option true will always use values from preview sizes for both -->
     <bool name="ignorePreferredPreviewSizeForVideo">false</bool>
+    <!-- Use the default resolution of the device as preview size
+    This prevents setting preview sizes above the device's resolution -->
+    <bool name="useDisplayResolutionAsPreviewSize">false</bool>
 </resources>
