@@ -146,7 +146,11 @@ public class CameraDataAdapter implements LocalDataAdapter {
             updateData(pos, newData);
         } else {
             // A new data.
-            insertData(newData);
+            if (newData != null){
+                insertData(newData);
+            } else {
+                Log.e(TAG, "trying to insert null data");
+            }
         }
     }
 
@@ -168,7 +172,11 @@ public class CameraDataAdapter implements LocalDataAdapter {
             updateData(pos, newData);
         } else {
             // a new data.
-            insertData(newData);
+            if (newData != null){
+                insertData(newData);
+            } else {
+                Log.e(TAG, "trying to insert null data");
+            }
         }
     }
 
