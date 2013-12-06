@@ -786,6 +786,7 @@ public class VideoModule implements CameraModule,
     public void onPauseBeforeSuper() {
         mPaused = true;
 
+        mUI.showPreviewCover();
         if (mMediaRecorderRecording) {
             // Camera will be released in onStopVideoRecording.
             onStopVideoRecording();
