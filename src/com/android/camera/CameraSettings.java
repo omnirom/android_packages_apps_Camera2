@@ -438,7 +438,20 @@ public class CameraSettings {
         if (longShot!= null && !isLongshotSupported(mParameters)) {
             removePreference(group, longShot.getKey());
         }
+
+        if (contrast != null && !CameraUtil.isSupported(mParameters, "contrast")) {
+            removePreference(group, contrast.getKey());
+        }
+
+        if (sharpness != null && !CameraUtil.isSupported(mParameters, "sharpness")) {
+            removePreference(group, sharpness.getKey());
+        }
+
+        if (saturation != null && !CameraUtil.isSupported(mParameters, "saturation")) {
+            removePreference(group, saturation.getKey());
+        }
     }
+
     private void initPreference(PreferenceGroup group) {
         ListPreference videoQuality = group.findPreference(KEY_VIDEO_QUALITY);
         ListPreference timeLapseInterval = group.findPreference(KEY_VIDEO_TIME_LAPSE_FRAME_INTERVAL);
