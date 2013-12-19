@@ -91,6 +91,7 @@ import com.android.camera.util.UsageStatistics;
 import com.android.camera2.R;
 
 import java.io.File;
+import java.lang.Runtime;
 
 import static com.android.camera.CameraManager.CameraOpenErrorCallback;
 
@@ -241,6 +242,11 @@ public class CameraActivity extends Activity
 
                 @Override
                 public void onDeviceOpenFailure(int cameraId) {
+                    if (Context.getResources().getBoolean(R.bool.needsRestartCamera)) {
+                        Runtime.getRuntime().exec("/system/etc/restartcamera.sh");
+                        Activity.recreate();
+                        return;
+                    }
                     UsageStatistics.onEvent(UsageStatistics.COMPONENT_CAMERA,
                             UsageStatistics.ACTION_OPEN_FAIL, "open");
 
@@ -250,6 +256,11 @@ public class CameraActivity extends Activity
 
                 @Override
                 public void onReconnectionFailure(CameraManager mgr) {
+                    if (Context.getResources().getBoolean(R.bool.needsRestartCamera)) {
+                        Runtime.getRuntime().exec("/system/etc/restartcamera.sh");
+                        Activity.recreate();
+                        return;
+                    }
                     UsageStatistics.onEvent(UsageStatistics.COMPONENT_CAMERA,
                             UsageStatistics.ACTION_OPEN_FAIL, "reconnect");
 

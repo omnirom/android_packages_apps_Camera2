@@ -74,6 +74,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.Runtime;
 import java.util.List;
 import java.util.Vector;
 
@@ -338,6 +339,11 @@ public class PhotoModule
                 }
 
                 case OPEN_CAMERA_FAIL: {
+                    if (Context.getResources().getBoolean(R.bool.needsRestartCamera)) {
+                        Runtime.getRuntime().exec("/system/etc/restartcamera.sh");
+                        Activity.recreate();
+                        break;
+                    }
                     mOpenCameraFail = true;
                     CameraUtil.showErrorAndFinish(mActivity,
                             R.string.cannot_connect_camera);

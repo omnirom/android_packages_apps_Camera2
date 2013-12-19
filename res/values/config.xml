@@ -37,4 +37,6 @@
     <bool name="noFaceDetectOnFrontCamera">false</bool>
     <!-- Use ZSL mode for Qualcomm cameras -->
     <bool name="enableZSL">false</bool>
+    <!-- Makes the camera kill mediaserver if it can't connect to camera -->
+    <bool name="needsRestartCamera">false</bool>
 </resources>
