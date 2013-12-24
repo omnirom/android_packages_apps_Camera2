@@ -699,6 +699,14 @@ public class PhotoModule
             }
 
             mJpegPictureCallbackTime = System.currentTimeMillis();
+            if(mSnapshotMode == CameraInfo.CAMERA_SUPPORT_MODE_ZSL) {
+                Log.v(TAG, "JpegPictureCallback : in zslmode");
+                mParameters = mCameraDevice.getParameters();
+                mBurstSnapNum = CameraUtil.getNumSnapsPerShutter(mParameters);
+            }
+            Log.v(TAG, "JpegPictureCallback: Received = " + mReceivedSnapNum +
+                      "Burst count = " + mBurstSnapNum);
+
             // If postview callback has arrived, the captured image is displayed
             // in postview callback. If not, the captured image is displayed in
             // raw picture callback.
@@ -717,7 +725,15 @@ public class PhotoModule
                     + mPictureDisplayedToJpegCallbackTime + "ms");
 
             mFocusManager.updateFocusUI(); // Ensure focus indicator is hidden.
-            if (!mIsImageCaptureIntent && !CameraUtil.enableZSL()) {
+
+            boolean needRestartPreview = !mIsImageCaptureIntent
+                      && (mCameraState != LONGSHOT)
+                      && (mSnapshotMode != CameraInfo.CAMERA_SUPPORT_MODE_ZSL)
+                      && (mReceivedSnapNum == mBurstSnapNum);
+
+            Log.v(TAG, "needRestartPreview=" + needRestartPreview);
+
+            if (needRestartPreview) {
                 setupPreview();
             } else if (CameraUtil.enableZSL()){
                 Log.v(TAG, "enableZSL true");
@@ -918,6 +934,10 @@ public class PhotoModule
         Location loc = mLocationManager.getCurrentLocation();
         CameraUtil.setGpsParameters(mParameters, loc);
         mCameraDevice.setParameters(mParameters);
+        mParameters = mCameraDevice.getParameters();
+
+        mBurstSnapNum = CameraUtil.getNumSnapsPerShutter(mParameters);
+        mReceivedSnapNum = 0;
 
         // We don't want user to press the button again while taking a
         // multi-second HDR photo.
