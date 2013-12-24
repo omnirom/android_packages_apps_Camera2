@@ -484,12 +484,34 @@ public class CameraSettings {
         initialCameraPictureSize(context, parameters);
         writePreferredCameraId(preferences, currentCameraId);
     }
+    private static boolean checkSupportedVideoQuality(Parameters parameters,int width, int height){
+        List <Size> supported = parameters.getSupportedVideoSizes();
+        if (supported == null) {
+            // video-size not specified in parameter list. just go along with the profile.
+            return true;
+        }
+        int flag = 0;
+        for (Size size : supported){
+            //since we are having two profiles with same height, we are checking with height
+            if (size.height == 480) {
+                if (size.height == height && size.width == width) {
+                    flag = 1;
+                    break;
+                }
+            } else {
+                if (size.width == width) {
+                    flag = 1;
+                    break;
+                }
+            }
+        }
+        if (flag == 1)
+            return true;
 
     private static ArrayList<String> getSupportedVideoQuality(int cameraId) {
         ArrayList<String> supported = new ArrayList<String>();
         // Check for supported quality
-        if (ApiHelper.HAS_FINE_RESOLUTION_QUALITY_LEVELS &&
-                parameters.getSupportedVideoSizes() != null) {
+        if (ApiHelper.HAS_FINE_RESOLUTION_QUALITY_LEVELS) {
             getFineResolutionQuality(supported,cameraId,parameters);
         } else {
             supported.add(Integer.toString(CamcorderProfile.QUALITY_HIGH));
