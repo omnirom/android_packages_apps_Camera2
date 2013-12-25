@@ -99,7 +99,6 @@ public class PhotoMenu extends PieController
                 CameraSettings.KEY_HISTOGRAM,
                 CameraSettings.KEY_FOCUS_MODE,
                 CameraSettings.KEY_JPEG_QUALITY,
-                CameraSettings.KEY_ZSL,
                 CameraSettings.KEY_TIMER,
                 CameraSettings.KEY_TIMER_SOUND_EFFECTS,
                 CameraSettings.KEY_CAMERA_SAVEPATH,
@@ -110,7 +109,6 @@ public class PhotoMenu extends PieController
                 CameraSettings.KEY_COLOR_EFFECT,
                 CameraSettings.KEY_FACE_DETECTION,
                 CameraSettings.KEY_FACE_RECOGNITION,
-                CameraSettings.KEY_TOUCH_AF_AEC,
                 CameraSettings.KEY_SELECTABLE_ZONE_AF,
                 CameraSettings.KEY_PICTURE_FORMAT,
                 CameraSettings.KEY_SATURATION,
@@ -251,7 +249,6 @@ public class PhotoMenu extends PieController
      if ((sceneMode != null) && !Parameters.SCENE_MODE_AUTO.equals(sceneMode)){
          popup1.setPreferenceEnabled(CameraSettings.KEY_FOCUS_MODE,false);
          popup2.setPreferenceEnabled(CameraSettings.KEY_AUTOEXPOSURE,false);
-         popup2.setPreferenceEnabled(CameraSettings.KEY_TOUCH_AF_AEC,false);
          popup2.setPreferenceEnabled(CameraSettings.KEY_SATURATION,false);
          popup2.setPreferenceEnabled(CameraSettings.KEY_CONTRAST,false);
          popup2.setPreferenceEnabled(CameraSettings.KEY_SHARPNESS,false);
@@ -295,7 +292,6 @@ public class PhotoMenu extends PieController
              popup3.setPreferenceEnabled(CameraSettings.KEY_REDEYE_REDUCTION,false);
              popup3.setPreferenceEnabled(CameraSettings.KEY_EXPOSURE,false);
              popup2.setPreferenceEnabled(CameraSettings.KEY_COLOR_EFFECT,false);
-             popup2.setPreferenceEnabled(CameraSettings.KEY_TOUCH_AF_AEC,false);
              popup1.setPreferenceEnabled(CameraSettings.KEY_SCENE_MODE,false);
 
              setPreference(CameraSettings.KEY_CAMERA_HDR, mSettingOff);
@@ -373,11 +369,7 @@ public class PhotoMenu extends PieController
         // set to non-auto.
         if (notSame(pref, CameraSettings.KEY_CAMERA_HDR, mSettingOff)) {
             setPreference(CameraSettings.KEY_SCENE_MODE, Parameters.SCENE_MODE_AUTO);
-            setPreference(CameraSettings.KEY_ZSL,mSettingOff);
         } else if (notSame(pref, CameraSettings.KEY_SCENE_MODE, Parameters.SCENE_MODE_AUTO)) {
-            setPreference(CameraSettings.KEY_CAMERA_HDR, mSettingOff);
-        }
-        if (notSame(pref,CameraSettings.KEY_ZSL,mSettingOff)){
             setPreference(CameraSettings.KEY_CAMERA_HDR, mSettingOff);
         }
         super.onSettingChanged(pref);

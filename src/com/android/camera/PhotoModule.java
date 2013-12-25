@@ -174,7 +174,6 @@ public class PhotoModule
     private boolean mAeLockSupported;
     private boolean mAwbLockSupported;
     private boolean mContinuousFocusSupported;
-    private boolean mTouchAfAecFlag;
     private boolean mLongshotSave = false;
 
     // The degrees of the device rotated clockwise from its natural orientation.
@@ -289,7 +288,6 @@ public class PhotoModule
     private FocusOverlayManager mFocusManager;
 
     private String mSceneMode;
-    private String mCurrTouchAfAec = Parameters.TOUCH_AF_AEC_ON;
 
     private final Handler mHandler = new MainHandler();
     private MessageQueue.IdleHandler mIdleHandler = null;
@@ -612,7 +610,6 @@ public class PhotoModule
                     mActivity.getString(R.string.setting_off_value));
         }
         updateCameraSettings();
-        updateHdrMode();
         showTapToFocusToastIfNeeded();
 
     }
@@ -1000,6 +997,7 @@ public class PhotoModule
                     mCameraDevice.cancelAutoFocus();
                 }
                 mUI.resumeFaceDetection();
+                mCameraDevice.startPreview();
                 setCameraState(IDLE);
             }
 
@@ -1352,7 +1350,6 @@ public class PhotoModule
         String focusMode = null;
         String colorEfect = null;
         String exposureCompensation = null;
-        String touchAfAec = null;
 
         String ubiFocusOn = mActivity.getString(R.string.
             pref_camera_advanced_feature_value_ubifocus_on);
@@ -1382,7 +1379,7 @@ public class PhotoModule
             exposureCompensation = CameraSettings.EXPOSURE_DEFAULT_VALUE;
 
             overrideCameraSettings(flashMode, null, focusMode,
-                                   exposureCompensation, touchAfAec, null,
+                                   exposureCompensation, null,
                                    null, null, null, colorEfect,
                                    sceneMode, redeyeReduction, aeBracketing);
         }
@@ -1400,10 +1397,9 @@ public class PhotoModule
             colorEfect = mParameters.getColorEffect();
             exposureCompensation =
                 Integer.toString(mParameters.getExposureCompensation());
-            touchAfAec = mCurrTouchAfAec;
 
             overrideCameraSettings(flashMode, whiteBalance, focusMode,
-                    exposureCompensation, touchAfAec,
+                    exposureCompensation,
                     mParameters.getAutoExposure(),
                     Integer.toString(mParameters.getSaturation()),
                     Integer.toString(mParameters.getContrast()),
@@ -1413,31 +1409,20 @@ public class PhotoModule
         } else if (mFocusManager.isZslEnabled()) {
             focusMode = mParameters.getFocusMode();
             overrideCameraSettings(flashMode, null, focusMode,
-                                   exposureCompensation, touchAfAec, null,
+                                   exposureCompensation, null,
                                    null, null, null, colorEfect,
                                    sceneMode, redeyeReduction, aeBracketing);
         } else {
             overrideCameraSettings(flashMode, null, focusMode,
-                                   exposureCompensation, touchAfAec, null,
+                                   exposureCompensation, null,
                                    null, null, null, colorEfect,
                                    sceneMode, redeyeReduction, aeBracketing);
-        }
-    }
-
-    private void updateHdrMode() {
-        String zsl = mPreferences.getString(CameraSettings.KEY_ZSL,
-                         mActivity.getString(R.string.pref_camera_zsl_default));
-        if (zsl.equals("on")) {
-            mUI.overrideSettings(CameraSettings.KEY_CAMERA_HDR,
-                                      mParameters.getAEBracket());
-        } else {
-            mUI.overrideSettings(CameraSettings.KEY_CAMERA_HDR, null);
         }
     }
 
     private void overrideCameraSettings(final String flashMode,
             final String whiteBalance, final String focusMode,
-            final String exposureMode, final String touchMode,
+            final String exposureMode,
             final String autoExposure, final String saturation,
             final String contrast, final String sharpness,
             final String coloreffect, final String sceneMode,
@@ -1447,7 +1432,6 @@ public class PhotoModule
                 CameraSettings.KEY_WHITE_BALANCE, whiteBalance,
                 CameraSettings.KEY_FOCUS_MODE, focusMode,
                 CameraSettings.KEY_EXPOSURE, exposureMode,
-                CameraSettings.KEY_TOUCH_AF_AEC, touchMode,
                 CameraSettings.KEY_AUTOEXPOSURE, autoExposure,
                 CameraSettings.KEY_SATURATION, saturation,
                 CameraSettings.KEY_CONTRAST, contrast,
@@ -2003,10 +1987,6 @@ public class PhotoModule
                 || mCameraState == PREVIEW_STOPPED) {
             return;
         }
-        //If Touch AF/AEC is disabled in UI, return
-        if(this.mTouchAfAecFlag == false) {
-            return;
-        }
         // Check if metering area or focus area is supported.
         if (!mFocusAreaSupported && !mMeteringAreaSupported) return;
         mFocusManager.onSingleTapUp(x, y);
@@ -2203,26 +2183,6 @@ public class PhotoModule
             mParameters.setZoom(mZoomValue);
         }
     }
-    private boolean needRestart() {
-        mRestartPreview = false;
-        String zsl = mPreferences.getString(CameraSettings.KEY_ZSL,
-                                  mActivity.getString(R.string.pref_camera_zsl_default));
-        if(zsl.equals("on") && mSnapshotMode != CameraInfo.CAMERA_SUPPORT_MODE_ZSL
-           && mCameraState != PREVIEW_STOPPED) {
-            //Switch on ZSL Camera mode
-            Log.v(TAG, "Switching to ZSL Camera Mode. Restart Preview");
-            mRestartPreview = true;
-            return mRestartPreview;
-        }
-        if(zsl.equals("off") && mSnapshotMode != CameraInfo.CAMERA_SUPPORT_MODE_NONZSL
-                 && mCameraState != PREVIEW_STOPPED) {
-            //Switch on Normal Camera mode
-            Log.v(TAG, "Switching to Normal Camera Mode. Restart Preview");
-            mRestartPreview = true;
-            return mRestartPreview;
-        }
-        return mRestartPreview;
-    }
 
     private void qcomUpdateAdvancedFeatures(String ubiFocus,
                                             String chromaFlash,
@@ -2247,29 +2207,6 @@ public class PhotoModule
                 CameraSettings.KEY_LONGSHOT,
                 mActivity.getString(R.string.pref_camera_longshot_default));
         mParameters.set("long-shot", longshot_enable);
-
-        if (Parameters.SCENE_MODE_AUTO.equals(mSceneMode) ||
-            CameraUtil.SCENE_MODE_HDR.equals(mSceneMode)) {
-            // Set Touch AF/AEC parameter.
-            String touchAfAec = mPreferences.getString(
-                 CameraSettings.KEY_TOUCH_AF_AEC,
-                 mActivity.getString(R.string.pref_camera_touchafaec_default));
-            if (CameraUtil.isSupported(touchAfAec, mParameters.getSupportedTouchAfAec())) {
-                mCurrTouchAfAec = touchAfAec;
-                mParameters.setTouchAfAec(touchAfAec);
-            }
-        } else {
-            mParameters.setTouchAfAec(mParameters.TOUCH_AF_AEC_OFF);
-            mFocusManager.resetTouchFocus();
-        }
-        try {
-            if(mParameters.getTouchAfAec().equals(mParameters.TOUCH_AF_AEC_ON))
-                this.mTouchAfAecFlag = true;
-            else
-                this.mTouchAfAecFlag = false;
-        } catch(Exception e){
-            Log.e(TAG, "Handled NULL pointer Exception");
-        }
 
         // Set Picture Format
         // Picture Formats specified in UI should be consistent with
@@ -2440,53 +2377,32 @@ public class PhotoModule
             mParameters.setAntibanding(antiBanding);
         }
 
-        String zsl = mPreferences.getString(CameraSettings.KEY_ZSL,
-                                  mActivity.getString(R.string.pref_camera_zsl_default));
+        boolean zsl = CameraUtil.isZSLEnabled();
         String hdr = mPreferences.getString(CameraSettings.KEY_CAMERA_HDR,
                 mActivity.getString(R.string.pref_camera_hdr_default));
-        mParameters.setZSLMode(zsl);
-        if(zsl.equals("on")) {
+
+        String format = mPreferences.getString(CameraSettings.KEY_PICTURE_FORMAT,
+                mActivity.getString(R.string.pref_camera_picture_format_value_jpeg));
+
+        if (zsl && (hdr.equals(mActivity.getString(R.string.setting_on_value))
+                || !format.equals(mActivity.getString(R.string.pref_camera_picture_format_value_jpeg)))) {
+            // Turn off ZSL when taking HDR or RAW shots
+            zsl = false;
+        }
+
+        if(zsl) {
             //Switch on ZSL Camera mode
             mSnapshotMode = CameraInfo.CAMERA_SUPPORT_MODE_ZSL;
+            mParameters.setZSLMode("on");
             mParameters.setCameraMode(1);
             mFocusManager.setZslEnable(true);
-
-<<<<<<< HEAD
-            //Raw picture format is not supported under ZSL mode
-            mParameters.set(KEY_PICTURE_FORMAT, PIXEL_FORMAT_JPEG);
-=======
-            // Currently HDR is not supported under ZSL mode
->>>>>>> parent of be11c6b... Camera2: Enable HDR for zsl mode
-            Editor editor = mPreferences.edit();
-            editor.putString(CameraSettings.KEY_AE_BRACKET_HDR, mActivity.getString(R.string.setting_off_value));
-
-            //Raw picture format is not supported under ZSL mode
-            editor.putString(CameraSettings.KEY_PICTURE_FORMAT, mActivity.getString(R.string.pref_camera_picture_format_value_jpeg));
-            editor.apply();
-            mUI.overrideSettings(CameraSettings.KEY_PICTURE_FORMAT, mActivity.getString(R.string.pref_camera_picture_format_entry_jpeg));
-
-            if(!pictureFormat.equals(PIXEL_FORMAT_JPEG)) {
-                     mActivity.runOnUiThread(new Runnable() {
-                     public void run() {
-                Toast.makeText(mActivity, R.string.error_app_unsupported_raw,
-                    Toast.LENGTH_SHORT).show();
-                         }
-                    });
-            }
-
-            if(hdr.equals(mActivity.getString(R.string.setting_on_value))) {
-                     mActivity.runOnUiThread(new Runnable() {
-                     public void run() {
-                Toast.makeText(mActivity, R.string.error_app_unsupported_hdr_zsl,
-                    Toast.LENGTH_SHORT).show();
-                         }
-                    });
-            }
-        } else if(zsl.equals("off")) {
+        } else {
             mSnapshotMode = CameraInfo.CAMERA_SUPPORT_MODE_NONZSL;
+            mParameters.setZSLMode("off");
             mParameters.setCameraMode(0);
             mFocusManager.setZslEnable(false);
         }
+
         // Set face detetction parameter.
         String faceDetection = mPreferences.getString(
             CameraSettings.KEY_FACE_DETECTION,
@@ -2830,7 +2746,6 @@ public class PhotoModule
             }
             mRestartPreview = false;
             updateCameraSettings();
-            updateHdrMode();
             mUpdateSet = 0;
         } else {
             if (!mHandler.hasMessages(SET_CAMERA_PARAMETERS_WHEN_IDLE)) {
@@ -2871,13 +2786,7 @@ public class PhotoModule
         boolean recordLocation = RecordLocationPreference.get(
                 mPreferences, mContentResolver);
         mLocationManager.recordLocation(recordLocation);
-        if(needRestart()){
-            Log.v(TAG, "Restarting Preview... Camera Mode Changhed");
-            stopPreview();
-            startPreview();
-            setCameraState(IDLE);
-            mRestartPreview = false;
-        }
+
         /* Check if the PhotoUI Menu is initialized or not. This
          * should be initialized during onCameraOpen() which should
          * have been called by now. But for some reason that is not
