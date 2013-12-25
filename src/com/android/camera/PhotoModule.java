@@ -149,6 +149,7 @@ public class PhotoModule
     private boolean mAeLockSupported;
     private boolean mAwbLockSupported;
     private boolean mContinuousFocusSupported;
+    private boolean mLongshotSave = false;
 
     // The degrees of the device rotated clockwise from its natural orientation.
     private int mOrientation = OrientationEventListener.ORIENTATION_UNKNOWN;
@@ -731,7 +732,8 @@ public class PhotoModule
                       && (mSnapshotMode != CameraInfo.CAMERA_SUPPORT_MODE_ZSL)
                       && (mReceivedSnapNum == mBurstSnapNum);
 
-            Log.v(TAG, "needRestartPreview=" + needRestartPreview);
+            Log.v(TAG, "needRestartPreview=" + needRestartPreview + " mCameraState=" + mCameraState +
+                       " mReceivedSnapNum= " + mReceivedSnapNum + " mBurstSnapNum=" + mBurstSnapNum);
 
             if (needRestartPreview) {
                 setupPreview();
@@ -748,6 +750,9 @@ public class PhotoModule
                     mFocusManager.resetTouchFocus();
                     setCameraState(IDLE);
                 }
+                mUI.resumeFaceDetection();
+                mCameraDevice.startPreview();
+                setCameraState(IDLE);
             }
             ExifInterface exif = Exif.getExif(jpegData);
             int orientation = Exif.getOrientation(exif);
@@ -982,18 +987,23 @@ public class PhotoModule
         // focus mode, instead, we read it from driver
         if (!Parameters.SCENE_MODE_AUTO.equals(mSceneMode)) {
             overrideCameraSettings(mParameters.getFlashMode(),
-                    mParameters.getWhiteBalance(), mParameters.getFocusMode());
+                    mParameters.getWhiteBalance(), mParameters.getFocusMode(),
+                    Integer.toString(mParameters.getExposureCompensation()),
+                    mParameters.getAutoExposure());
         } else {
-            overrideCameraSettings(null, null, null);
+            overrideCameraSettings(null, null, null, null, null);
         }
     }
 
     private void overrideCameraSettings(final String flashMode,
-                                        final String whiteBalance, final String focusMode) {
+            final String whiteBalance, final String focusMode,
+            final String exposureMode, final String autoExposure) {
         mUI.overrideSettings(
                 CameraSettings.KEY_FLASH_MODE, flashMode,
                 CameraSettings.KEY_WHITE_BALANCE, whiteBalance,
-                CameraSettings.KEY_FOCUS_MODE, focusMode);
+                CameraSettings.KEY_FOCUS_MODE, focusMode,
+                CameraSettings.KEY_EXPOSURE, exposureMode,
+                CameraSettings.KEY_AUTOEXPOSURE, autoExposure);
     }
 
     private void loadCameraPreferences() {
@@ -1427,7 +1437,6 @@ public class PhotoModule
                 || mCameraState == PREVIEW_STOPPED) {
             return;
         }
-
         // Check if metering area or focus area is supported.
         if (!mFocusAreaSupported && !mMeteringAreaSupported) return;
         mFocusManager.onSingleTapUp(x, y);
@@ -1624,6 +1633,264 @@ public class PhotoModule
         }
     }
 
+    private void qcomUpdateCameraParametersPreference() {
+        // Set Picture Format
+        // Picture Formats specified in UI should be consistent with
+        // PIXEL_FORMAT_JPEG and PIXEL_FORMAT_RAW constants
+        String pictureFormat = mPreferences.getString(
+                CameraSettings.KEY_PICTURE_FORMAT,
+                mActivity.getString(R.string.pref_camera_picture_format_default));
+        mParameters.set(KEY_PICTURE_FORMAT, pictureFormat);
+
+        // Set JPEG quality.
+        String jpegQuality = mPreferences.getString(
+                CameraSettings.KEY_JPEG_QUALITY,
+                mActivity.getString(R.string.pref_camera_jpegquality_default));
+        //mUnsupportedJpegQuality = false;
+        Size pic_size = mParameters.getPictureSize();
+        if (pic_size == null) {
+            Log.e(TAG, "error getPictureSize: size is null");
+        }
+        else{
+            if("100".equals(jpegQuality) && (pic_size.width >= 3200)){
+                //mUnsupportedJpegQuality = true;
+            }else {
+                mParameters.setJpegQuality(JpegEncodingQualityMappings.getQualityNumber(jpegQuality));
+            }
+        }
+
+        // Set Selectable Zone Af parameter.
+        String selectableZoneAf = mPreferences.getString(
+            CameraSettings.KEY_SELECTABLE_ZONE_AF,
+            mActivity.getString(R.string.pref_camera_selectablezoneaf_default));
+        List<String> str = mParameters.getSupportedSelectableZoneAf();
+        if (CameraUtil.isSupported(selectableZoneAf, mParameters.getSupportedSelectableZoneAf())) {
+            mParameters.setSelectableZoneAf(selectableZoneAf);
+        }
+
+        // Set wavelet denoise mode
+        if (mParameters.getSupportedDenoiseModes() != null) {
+            String Denoise = mPreferences.getString( CameraSettings.KEY_DENOISE,
+                             mActivity.getString(R.string.pref_camera_denoise_default));
+            mParameters.setDenoise(Denoise);
+        }
+        // Set Redeye Reduction
+        String redeyeReduction = mPreferences.getString(
+                CameraSettings.KEY_REDEYE_REDUCTION,
+                mActivity.getString(R.string.pref_camera_redeyereduction_default));
+        if (CameraUtil.isSupported(redeyeReduction,
+            mParameters.getSupportedRedeyeReductionModes())) {
+            mParameters.setRedeyeReductionMode(redeyeReduction);
+        }
+        // Set ISO parameter
+        String iso = mPreferences.getString(
+                CameraSettings.KEY_ISO,
+                mActivity.getString(R.string.pref_camera_iso_default));
+        if (CameraUtil.isSupported(iso,
+                mParameters.getSupportedIsoValues())) {
+                mParameters.setISOValue(iso);
+        }
+        // Set color effect parameter.
+        String colorEffect = mPreferences.getString(
+                CameraSettings.KEY_COLOR_EFFECT,
+                mActivity.getString(R.string.pref_camera_coloreffect_default));
+        Log.v(TAG, "Color effect value =" + colorEffect);
+        if (CameraUtil.isSupported(colorEffect, mParameters.getSupportedColorEffects())) {
+            mParameters.setColorEffect(colorEffect);
+        }
+        //Set Saturation
+        if (CameraUtil.isSupported(mParameters, "saturation")) {
+            String saturationStr = mPreferences.getString(
+                    CameraSettings.KEY_SATURATION,
+                    mActivity.getString(R.string.pref_camera_saturation_default));
+            int saturation = Integer.parseInt(saturationStr);
+            Log.v(TAG, "Saturation value =" + saturation);
+            if((0 <= saturation) && (saturation <= mParameters.getMaxSaturation())){
+                mParameters.setSaturation(saturation);
+            }
+        }
+        // Set contrast parameter.
+        if (CameraUtil.isSupported(mParameters, "contrast")) {
+            String contrastStr = mPreferences.getString(
+                    CameraSettings.KEY_CONTRAST,
+                    mActivity.getString(R.string.pref_camera_contrast_default));
+            int contrast = Integer.parseInt(contrastStr);
+            Log.v(TAG, "Contrast value =" + contrast);
+            if ((0 <= contrast) && (contrast <= mParameters.getMaxContrast())) {
+                mParameters.setContrast(contrast);
+            }
+        }
+        // Set sharpness parameter
+        if (CameraUtil.isSupported(mParameters, "sharpness")) {
+            String sharpnessStr = mPreferences.getString(
+                    CameraSettings.KEY_SHARPNESS,
+                    mActivity.getString(R.string.pref_camera_sharpness_default));
+            int sharpness = Integer.parseInt(sharpnessStr) *
+                    (mParameters.getMaxSharpness() / MAX_SHARPNESS_LEVEL);
+            Log.v(TAG, "Sharpness value =" + sharpness);
+            if ((0 <= sharpness) && (sharpness <= mParameters.getMaxSharpness())) {
+                mParameters.setSharpness(sharpness);
+            }
+        }
+        // Set Face Recognition
+        String faceRC = mPreferences.getString(
+                CameraSettings.KEY_FACE_RECOGNITION,
+                mActivity.getString(R.string.pref_camera_facerc_default));
+        Log.v(TAG, "Face Recognition value = " + faceRC);
+        if (CameraUtil.isSupported(faceRC,
+                CameraSettings.getSupportedFaceRecognitionModes(mParameters))) {
+            mParameters.set(CameraSettings.KEY_QC_FACE_RECOGNITION, faceRC);
+        }
+        // Set AE Bracketing
+        String aeBracketing = mPreferences.getString(
+                CameraSettings.KEY_AE_BRACKET_HDR,
+                mActivity.getString(R.string.pref_camera_ae_bracket_hdr_default));
+        Log.v(TAG, "AE Bracketing value =" + aeBracketing);
+        if (CameraUtil.isSupported(aeBracketing,
+                CameraSettings.getSupportedAEBracketingModes(mParameters))) {
+            mParameters.set(CameraSettings.KEY_QC_AE_BRACKETING, aeBracketing);
+        }
+        // Set auto exposure parameter.
+        String autoExposure = mPreferences.getString(
+                CameraSettings.KEY_AUTOEXPOSURE,
+                mActivity.getString(R.string.pref_camera_autoexposure_default));
+        Log.v(TAG, "autoExposure value =" + autoExposure);
+        if (CameraUtil.isSupported(autoExposure, mParameters.getSupportedAutoexposure())) {
+            mParameters.setAutoExposure(autoExposure);
+        }
+
+        // Set anti banding parameter.
+        String antiBanding = mPreferences.getString(
+                 CameraSettings.KEY_ANTIBANDING,
+                 mActivity.getString(R.string.pref_camera_antibanding_default));
+        Log.v(TAG, "antiBanding value =" + antiBanding);
+        if (CameraUtil.isSupported(antiBanding, mParameters.getSupportedAntibanding())) {
+            mParameters.setAntibanding(antiBanding);
+        }
+
+        boolean zsl = mActivity.getResources().getBoolean(R.bool.enableZSL);
+        String hdr = mPreferences.getString(CameraSettings.KEY_CAMERA_HDR,
+                mActivity.getString(R.string.pref_camera_hdr_default));
+        String format = mPreferences.getString(CameraSettings.KEY_PICTURE_FORMAT,
+                mActivity.getString(R.string.pref_camera_picture_format_value_jpeg));
+
+        if (zsl && (hdr.equals(mActivity.getString(R.string.setting_on_value))
+                || !format.equals(mActivity.getString(R.string.pref_camera_picture_format_value_jpeg)))) {
+            // Turn off ZSL when taking HDR or RAW shots
+            zsl = false;
+        }
+
+        mParameters.setZSLMode(zsl ? "on" : "off");
+
+        if(zsl) {
+            //Switch on ZSL Camera mode
+            mSnapshotMode = CameraInfo.CAMERA_SUPPORT_MODE_ZSL;
+            mParameters.setCameraMode(1);
+            mFocusManager.setZslEnable(true);
+
+        } else {
+            mSnapshotMode = CameraInfo.CAMERA_SUPPORT_MODE_NONZSL;
+            mParameters.setCameraMode(0);
+            mFocusManager.setZslEnable(false);
+        }
+
+        // Set face detetction parameter.
+        String faceDetection = mPreferences.getString(
+            CameraSettings.KEY_FACE_DETECTION,
+            mActivity.getString(R.string.pref_camera_facedetection_default));
+
+        if (CameraUtil.isSupported(faceDetection, mParameters.getSupportedFaceDetectionModes())) {
+            mParameters.setFaceDetectionMode(faceDetection);
+            if(faceDetection.equals("on") && mFaceDetectionEnabled == false) {
+                mFaceDetectionEnabled = true;
+                startFaceDetection();
+            }
+            if(faceDetection.equals("off") && mFaceDetectionEnabled == true) {
+                stopFaceDetection();
+                mFaceDetectionEnabled = false;
+            }
+        }
+        // skin tone ie enabled only for auto,party and portrait BSM
+        // when color effects are not enabled
+        if((Parameters.SCENE_MODE_PARTY.equals(mSceneMode) ||
+            Parameters.SCENE_MODE_PORTRAIT.equals(mSceneMode)) &&
+            (Parameters.EFFECT_NONE.equals(colorEffect))) {
+             //Set Skin Tone Correction factor
+             Log.v(TAG, "set tone bar: mSceneMode = " + mSceneMode);
+             if(mSeekBarInitialized == true)
+                 mHandler.sendEmptyMessage(SET_SKIN_TONE_FACTOR);
+        }
+
+        //Set Histogram
+        String histogram = mPreferences.getString(
+                CameraSettings.KEY_HISTOGRAM,
+                mActivity.getString(R.string.pref_camera_histogram_default));
+        if (CameraUtil.isSupported(histogram,
+            mParameters.getSupportedHistogramModes()) && mCameraDevice != null) {
+            // Call for histogram
+            if(histogram.equals("enable")) {
+                mActivity.runOnUiThread(new Runnable() {
+                    public void run() {
+                        if(mGraphView != null) {
+                            mGraphView.setVisibility(View.VISIBLE);
+                            mGraphView.PreviewChanged();
+                        }
+                    }
+                });
+                mCameraDevice.setHistogramMode(mStatsCallback);
+                mHiston = true;
+            } else {
+                mHiston = false;
+                mActivity.runOnUiThread(new Runnable() {
+                    public void run() {
+                         if (mGraphView != null)
+                             mGraphView.setVisibility(View.INVISIBLE);
+                         }
+                    });
+                mCameraDevice.setHistogramMode(null);
+            }
+        }
+        // Read Flip mode from adb command
+        //value: 0(default) - FLIP_MODE_OFF
+        //value: 1 - FLIP_MODE_H
+        //value: 2 - FLIP_MODE_V
+        //value: 3 - FLIP_MODE_VH
+        int preview_flip_value = SystemProperties.getInt("debug.camera.preview.flip", 0);
+        int video_flip_value = SystemProperties.getInt("debug.camera.video.flip", 0);
+        int picture_flip_value = SystemProperties.getInt("debug.camera.picture.flip", 0);
+        int rotation = CameraUtil.getJpegRotation(mCameraId, mOrientation);
+        mParameters.setRotation(rotation);
+        if (rotation == 90 || rotation == 270) {
+            // in case of 90 or 270 degree, V/H flip should reverse
+            if (preview_flip_value == 1) {
+                preview_flip_value = 2;
+            } else if (preview_flip_value == 2) {
+                preview_flip_value = 1;
+            }
+            if (video_flip_value == 1) {
+                video_flip_value = 2;
+            } else if (video_flip_value == 2) {
+                video_flip_value = 1;
+            }
+            if (picture_flip_value == 1) {
+                picture_flip_value = 2;
+            } else if (picture_flip_value == 2) {
+                picture_flip_value = 1;
+            }
+        }
+        String preview_flip = CameraUtil.getFilpModeString(preview_flip_value);
+        String video_flip = CameraUtil.getFilpModeString(video_flip_value);
+        String picture_flip = CameraUtil.getFilpModeString(picture_flip_value);
+        if(CameraUtil.isSupported(preview_flip, CameraSettings.getSupportedFlipMode(mParameters))){
+            mParameters.set(CameraSettings.KEY_QC_PREVIEW_FLIP, preview_flip);
+        }
+        if(CameraUtil.isSupported(video_flip, CameraSettings.getSupportedFlipMode(mParameters))){
+            mParameters.set(CameraSettings.KEY_QC_VIDEO_FLIP, video_flip);
+        }
+        if(CameraUtil.isSupported(picture_flip, CameraSettings.getSupportedFlipMode(mParameters))){
+            mParameters.set(CameraSettings.KEY_QC_SNAPSHOT_PICTURE_FLIP, picture_flip);
+        }
+    }
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void setAutoExposureLockIfSupported() {
         if (mAeLockSupported) {
@@ -1910,8 +2177,34 @@ public class PhotoModule
                 mPreferences, mContentResolver);
         mLocationManager.recordLocation(recordLocation);
 
-        setCameraParametersWhenIdle(UPDATE_PARAM_PREFERENCE);
-        mUI.updateOnScreenIndicators(mParameters, mPreferenceGroup, mPreferences);
+        /* Check if the PhotoUI Menu is initialized or not. This
+         * should be initialized during onCameraOpen() which should
+         * have been called by now. But for some reason that is not
+         * executed till now, then schedule these functionality for
+         * later by posting a message to the handler */
+        if (mUI.mMenuInitialized) {
+            setCameraParametersWhenIdle(UPDATE_PARAM_PREFERENCE);
+            mUI.updateOnScreenIndicators(mParameters, mPreferenceGroup,
+                mPreferences);
+        } else {
+            mHandler.sendEmptyMessage(SET_PHOTO_UI_PARAMS);
+        }
+        resizeForPreviewAspectRatio();
+        if (mSeekBarInitialized == true){
+            Log.v(TAG, "onSharedPreferenceChanged Skin tone bar: change");
+            // skin tone is enabled only for party and portrait BSM
+            // when color effects are not enabled
+            String colorEffect = mPreferences.getString(
+                CameraSettings.KEY_COLOR_EFFECT,
+                mActivity.getString(R.string.pref_camera_coloreffect_default));
+            if((Parameters.SCENE_MODE_PARTY.equals(mSceneMode) ||
+                Parameters.SCENE_MODE_PORTRAIT.equals(mSceneMode)) &&
+                (Parameters.EFFECT_NONE.equals(colorEffect))) {
+                Log.v(TAG, "Party/Portrait + No effect, SkinToneBar enabled");
+            } else {
+                disableSkinToneSeekBar();
+            }
+        }
     }
 
     @Override
