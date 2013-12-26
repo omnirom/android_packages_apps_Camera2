@@ -168,7 +168,8 @@ public class VideoModule implements CameraModule,
 
     private LocationManager mLocationManager;
     private OrientationManager mOrientationManager;
-
+    private static final String KEY_PREVIEW_FORMAT = "preview-format";
+    private static final String QC_FORMAT_NV12_VENUS = "nv12-venus";
     private int mPendingSwitchCameraId;
     private final Handler mHandler = new MainHandler();
     private VideoUI mUI;
@@ -616,13 +617,22 @@ public class VideoModule implements CameraModule,
         mPreferenceRead = true;
     }
 
+    private boolean is4KEnabled() {
+       if (mProfile.quality == CamcorderProfile.QUALITY_4kUHD ||
+           mProfile.quality == CamcorderProfile.QUALITY_4kDCI) {
+           return true;
+       } else {
+           return false;
+       }
+    }
+
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     private void getDesiredPreviewSize() {
         if (mCameraDevice == null) {
             return;
         }
         mParameters = mCameraDevice.getParameters();
-        if (mParameters.getSupportedVideoSizes() == null) {
+        if (mParameters.getSupportedVideoSizes() == null || is4KEnabled()) {
             if (mActivity.getResources().getBoolean(R.bool.useDisplayResolutionAsPreviewSize)) {
                 if(mCameraDisplayOrientation == 90 || mCameraDisplayOrientation == 270) {
                     mDesiredPreviewWidth = screenHeight;
@@ -1547,6 +1557,12 @@ public class VideoModule implements CameraModule,
         if ("true".equals(vstabSupported)) {
             mParameters.set("video-stabilization", "true");
         }
+
+       // if 4K recoding is enabled, set preview format to NV12_VENUS
+       if (is4KEnabled()) {
+           Log.v(TAG, "4K enabled, preview format set to NV12_VENUS");
+           mParameters.set(KEY_PREVIEW_FORMAT, QC_FORMAT_NV12_VENUS);
+       }
 
         // Set picture size.
         // The logic here is different from the logic in still-mode camera.
