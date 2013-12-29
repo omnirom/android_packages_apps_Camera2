@@ -1644,11 +1644,20 @@ public class VideoModule implements CameraModule,
         mPreferences.setLocalId(mActivity, mCameraId);
         CameraSettings.upgradeLocalPreferences(mPreferences.getLocal());
         openCamera();
+
+        CameraInfo info = CameraHolder.instance().getCameraInfo()[mCameraId];
+        boolean mirror = (info.facing == CameraInfo.CAMERA_FACING_FRONT);
+        mFocusManager.setMirror(mirror);
+        mFocusManager.setParameters(mParameters);
+
         readVideoPreferences();
         startPreview();
         initializeVideoSnapshot();
         resizeForPreviewAspectRatio();
         initializeVideoControl();
+
+        mParameters = mCameraDevice.getParameters();
+        initializeCapabilities();
 
         // From onResume
         mZoomValue = 0;
