@@ -724,6 +724,9 @@ public class CameraSettings {
         if (flag == 1)
             return true;
 
+	    return false;
+    }
+
     private static ArrayList<String> getSupportedVideoQuality(int cameraId) {
         ArrayList<String> supported = new ArrayList<String>();
         // Check for supported quality
