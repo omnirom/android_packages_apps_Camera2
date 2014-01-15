@@ -529,6 +529,27 @@ public class PhotoModule
         }
     }
 
+    void setPreviewFrameLayoutCameraOrientation(){
+        CameraInfo info = CameraHolder.instance().getCameraInfo()[mCameraId];
+        //if camera mount angle is 0 or 180, we want to resize preview
+        if (info.orientation % 180 == 0){
+            mUI.cameraOrientationPreviewResize(true);
+        } else{
+            mUI.cameraOrientationPreviewResize(false);
+        }
+    }
+
+    @Override
+    public void resizeForPreviewAspectRatio() {
+        setPreviewFrameLayoutCameraOrientation();
+        if (mParameters != null) {
+            Size size = mParameters.getPictureSize();
+            Log.e(TAG,"Width = "+ size.width+ "Height = "+size.height);
+            mUI.setAspectRatio((float) size.width / size.height);
+        }
+    }
+
+
     private void keepMediaProviderInstance() {
         // We want to keep a reference to MediaProvider in camera's lifecycle.
         // TODO: Utilize mMediaProviderClient instance to replace
