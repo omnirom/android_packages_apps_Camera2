@@ -33,6 +33,10 @@
     <!-- Use the default resolution of the device as preview size
     This prevents setting preview sizes above the device's resolution -->
     <bool name="useDisplayResolutionAsPreviewSize">false</bool>
+    <!-- Decrease the resolution of the preview size by 2/3
+    (some devices don't work with the full display resolution as preview size)
+    This only works with useDisplayResolutionAsPreviewSize set to true -->
+    <bool name="andDecreasePreviewSize">false</bool>
     <!-- Disable face detection on the front camera -->
     <bool name="noFaceDetectOnFrontCamera">false</bool>
     <!-- Use ZSL mode for Qualcomm cameras -->
