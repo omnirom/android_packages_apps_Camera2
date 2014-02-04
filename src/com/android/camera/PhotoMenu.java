@@ -114,6 +114,12 @@ public class PhotoMenu extends PieController
                 item.setEnabled(false);
             }
         }
+        // Storage.
+        if (group.findPreference(CameraSettings.KEY_STORAGE) != null) {
+            item = makeItem(CameraSettings.KEY_STORAGE);
+            item.setLabel(res.getString(R.string.pref_camera_storage_title));
+            more.addItem(item);
+        }
         // Countdown timer.
         final ListPreference ctpref = group.findPreference(CameraSettings.KEY_TIMER);
         final ListPreference beeppref = group.findPreference(CameraSettings.KEY_TIMER_SOUND_EFFECTS);

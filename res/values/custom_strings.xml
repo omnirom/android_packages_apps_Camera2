@@ -56,4 +56,7 @@
     <string name="pref_camera_picturesize_entry_wvga">WVGA</string>
     <!-- Settings screen, dialog choice for WQVGA picture size [CHAR LIMIT=15] -->
     <string name="pref_camera_picturesize_entry_wqvga">WQVGA</string>
+
+    <!-- More Settings screen, storage title -->
+    <string name="pref_camera_storage_title">Storage</string>
 </resources>

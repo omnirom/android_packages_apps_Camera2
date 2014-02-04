@@ -39,15 +39,7 @@ import com.android.camera.util.ApiHelper;
 public class Storage {
     private static final String TAG = "CameraStorage";
 
-    public static final String DCIM =
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString();
-
-    public static final String DIRECTORY = DCIM + "/Camera";
     public static final String JPEG_POSTFIX = ".jpg";
-
-    // Match the code in MediaProvider.computeBucketValues().
-    public static final String BUCKET_ID =
-            String.valueOf(DIRECTORY.toLowerCase().hashCode());
 
     public static final long UNAVAILABLE = -1L;
     public static final long PREPARING = -2L;
@@ -63,7 +55,23 @@ public class Storage {
         }
     }
 
-    public static void writeFile(String path, byte[] jpeg, ExifInterface exif) {
+    private String mRoot = Environment.getExternalStorageDirectory().toString();
+    private static Storage sStorage;
+
+    private Storage() { }
+
+    public static Storage getInstance() {
+        if (sStorage == null) {
+            sStorage = new Storage();
+        }
+        return sStorage;
+    }
+
+    public void setRoot(String root) {
+        mRoot = root;
+    }
+
+    public void writeFile(String path, byte[] jpeg, ExifInterface exif) {
         if (exif != null) {
             try {
                 exif.writeExif(jpeg, path);
@@ -92,7 +100,7 @@ public class Storage {
     }
 
     // Save the image and add it to the MediaStore.
-    public static Uri addImage(ContentResolver resolver, String title, long date,
+    public Uri addImage(ContentResolver resolver, String title, long date,
             Location location, int orientation, ExifInterface exif, byte[] jpeg, int width,
             int height) {
 
@@ -101,7 +109,7 @@ public class Storage {
     }
 
     // Save the image with a given mimeType and add it the MediaStore.
-    public static Uri addImage(ContentResolver resolver, String title, long date,
+    public Uri addImage(ContentResolver resolver, String title, long date,
             Location location, int orientation, ExifInterface exif, byte[] jpeg, int width,
             int height, String mimeType) {
 
@@ -112,7 +120,7 @@ public class Storage {
     }
 
     // Get a ContentValues object for the given photo data
-    public static ContentValues getContentValuesForData(String title,
+    public ContentValues getContentValuesForData(String title,
             long date, Location location, int orientation, int jpegLength,
             String path, int width, int height, String mimeType) {
 
@@ -136,7 +144,7 @@ public class Storage {
     }
 
     // Add the image to media store.
-    public static Uri addImage(ContentResolver resolver, String title,
+    public Uri addImage(ContentResolver resolver, String title,
             long date, Location location, int orientation, int jpegLength,
             String path, int width, int height, String mimeType) {
         // Insert into MediaStore.
@@ -149,7 +157,7 @@ public class Storage {
 
     // Overwrites the file and updates the MediaStore, or inserts the image if
     // one does not already exist.
-    public static void updateImage(Uri imageUri, ContentResolver resolver, String title, long date,
+    public void updateImage(Uri imageUri, ContentResolver resolver, String title, long date,
             Location location, int orientation, ExifInterface exif, byte[] jpeg, int width,
             int height, String mimeType) {
         String path = generateFilepath(title);
@@ -160,7 +168,7 @@ public class Storage {
 
     // Updates the image values in MediaStore, or inserts the image if one does
     // not already exist.
-    public static void updateImage(Uri imageUri, ContentResolver resolver, String title,
+    public void updateImage(Uri imageUri, ContentResolver resolver, String title,
             long date, Location location, int orientation, int jpegLength,
             String path, int width, int height, String mimeType) {
 
@@ -182,7 +190,7 @@ public class Storage {
         }
     }
 
-    public static void deleteImage(ContentResolver resolver, Uri uri) {
+    public void deleteImage(ContentResolver resolver, Uri uri) {
         try {
             resolver.delete(uri, null, null);
         } catch (Throwable th) {
@@ -190,12 +198,33 @@ public class Storage {
         }
     }
 
-    public static String generateFilepath(String title) {
-        return DIRECTORY + '/' + title + ".jpg";
+    public String generateFilepath(String title) {
+        return generateDirectory() + '/' + title + ".jpg";
     }
 
-    public static long getAvailableSpace() {
-        String state = Environment.getExternalStorageState();
+    private String generateDCIM() {
+        return new File(mRoot, Environment.DIRECTORY_DCIM).toString();
+    }
+
+    public String generateDirectory() {
+        return generateDCIM() + "/Camera";
+    }
+
+    public String generateRawDirectory() {
+        return generateDirectory() + "/raw";
+    }
+
+    public String generateBucketId() {
+        return String.valueOf(generateBucketIdInt());
+    }
+
+    public int generateBucketIdInt() {
+        return generateDirectory().toLowerCase().hashCode();
+    }
+
+    public long getAvailableSpace() {
+        File dir = new File(generateDirectory());
+        String state = Environment.getStorageState(dir);
         Log.d(TAG, "External storage state=" + state);
         if (Environment.MEDIA_CHECKING.equals(state)) {
             return PREPARING;
@@ -204,14 +233,13 @@ public class Storage {
             return UNAVAILABLE;
         }
 
-        File dir = new File(DIRECTORY);
         dir.mkdirs();
         if (!dir.isDirectory() || !dir.canWrite()) {
             return UNAVAILABLE;
         }
 
         try {
-            StatFs stat = new StatFs(DIRECTORY);
+            StatFs stat = new StatFs(generateDirectory());
             return stat.getAvailableBlocks() * (long) stat.getBlockSize();
         } catch (Exception e) {
             Log.i(TAG, "Fail to access external storage", e);
@@ -223,8 +251,8 @@ public class Storage {
      * OSX requires plugged-in USB storage to have path /DCIM/NNNAAAAA to be
      * imported. This is a temporary fix for bug#1655552.
      */
-    public static void ensureOSXCompatible() {
-        File nnnAAAAA = new File(DCIM, "100ANDRO");
+    public void ensureOSXCompatible() {
+        File nnnAAAAA = new File(generateDCIM(), "100ANDRO");
         if (!(nnnAAAAA.exists() || nnnAAAAA.mkdirs())) {
             Log.e(TAG, "Failed to create " + nnnAAAAA.getPath());
         }
