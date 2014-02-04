@@ -57,6 +57,12 @@ public class VideoMenu extends PieController
         mPopup = null;
         mPopupStatus = POPUP_NONE;
         PieItem item = null;
+        // Storage.
+        if (group.findPreference(CameraSettings.KEY_STORAGE) != null) {
+            item = makeItem(CameraSettings.KEY_STORAGE);
+            item.setLabel(mActivity.getResources().getString(R.string.pref_camera_storage_title));
+            mRenderer.addItem(item);
+        }
         // white balance
         if (group.findPreference(CameraSettings.KEY_WHITE_BALANCE) != null) {
             item = makeItem(CameraSettings.KEY_WHITE_BALANCE);

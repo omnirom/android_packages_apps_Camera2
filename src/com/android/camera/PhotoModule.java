@@ -375,6 +375,12 @@ public class PhotoModule
 
         mPreferences.setLocalId(mActivity, mCameraId);
         CameraSettings.upgradeLocalPreferences(mPreferences.getLocal());
+
+        // Force a re-check of the storage path
+        if (mActivity.setStoragePath(mPreferences)) {
+            mActivity.updateStorageSpaceAndHint();
+        }
+
         // we need to reset exposure for the preview
         resetExposureCompensation();
 
@@ -600,7 +606,7 @@ public class PhotoModule
         queue.addIdleHandler(new MessageQueue.IdleHandler() {
             @Override
             public boolean queueIdle() {
-                Storage.ensureOSXCompatible();
+                Storage.getInstance().ensureOSXCompatible();
                 return false;
             }
         });
@@ -1895,6 +1901,10 @@ public class PhotoModule
         boolean recordLocation = RecordLocationPreference.get(
                 mPreferences, mContentResolver);
         mLocationManager.recordLocation(recordLocation);
+
+        if (mActivity.setStoragePath(mPreferences)) {
+            mActivity.updateStorageSpaceAndHint();
+        }
 
         setCameraParametersWhenIdle(UPDATE_PARAM_PREFERENCE);
         mUI.updateOnScreenIndicators(mParameters, mPreferenceGroup, mPreferences);
