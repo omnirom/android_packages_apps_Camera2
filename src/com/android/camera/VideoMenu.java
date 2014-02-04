@@ -64,6 +64,7 @@ public class VideoMenu extends PieController
         }
         // settings popup
         mOtherKeys = new String[] {
+        		CameraSettings.KEY_STORAGE,
                 CameraSettings.KEY_VIDEO_EFFECT,
                 CameraSettings.KEY_VIDEO_TIME_LAPSE_FRAME_INTERVAL,
                 CameraSettings.KEY_VIDEO_QUALITY,

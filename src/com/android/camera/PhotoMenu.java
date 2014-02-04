@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2012 The Android Open Source Project
+ * Copyright (C) 2013 The CyanogenMod Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,24 +21,33 @@ import java.util.Locale;
 
 import android.content.res.Resources;
 import android.hardware.Camera.Parameters;
+import android.view.LayoutInflater;
 
 import com.android.camera.ui.AbstractSettingPopup;
 import com.android.camera.ui.CountdownTimerPopup;
 import com.android.camera.ui.ListPrefSettingPopup;
+import com.android.camera.ui.MoreSettingPopup;
 import com.android.camera.ui.PieItem;
 import com.android.camera.ui.PieItem.OnClickListener;
 import com.android.camera.ui.PieRenderer;
 import com.android.camera2.R;
 
 public class PhotoMenu extends PieController
-        implements CountdownTimerPopup.Listener,
+        implements MoreSettingPopup.Listener,
+        CountdownTimerPopup.Listener,
         ListPrefSettingPopup.Listener {
     private static String TAG = "PhotoMenu";
 
     private final String mSettingOff;
 
     private PhotoUI mUI;
+    private String[] mOtherKeys;
     private AbstractSettingPopup mPopup;
+
+    private static final int POPUP_NONE = 0;
+    private static final int POPUP_FIRST_LEVEL = 1;
+    private static final int POPUP_SECOND_LEVEL = 2;
+    private int mPopupStatus;
     private CameraActivity mActivity;
 
     public PhotoMenu(CameraActivity activity, PhotoUI ui, PieRenderer pie) {
@@ -50,6 +60,7 @@ public class PhotoMenu extends PieController
     public void initialize(PreferenceGroup group) {
         super.initialize(group);
         mPopup = null;
+        mPopupStatus = POPUP_NONE;
         PieItem item = null;
         final Resources res = mActivity.getResources();
         Locale locale = res.getConfiguration().locale;
@@ -149,6 +160,30 @@ public class PhotoMenu extends PieController
             }
         });
         more.addItem(item);
+
+        // extra settings popup
+        mOtherKeys = new String[] {
+                CameraSettings.KEY_STORAGE,
+        };
+        item = makeItem(R.drawable.ic_settings_holo_light);
+        item.setLabel(res.getString(R.string.camera_menu_more_label).toUpperCase(locale));
+        item.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(PieItem item) {
+                if (mPopup == null || mPopupStatus != POPUP_FIRST_LEVEL) {
+                    LayoutInflater inflater = mActivity.getLayoutInflater();
+                    MoreSettingPopup popup = (MoreSettingPopup) inflater.inflate(
+                            R.layout.more_setting_popup, null, false);
+                    popup.initialize(mPreferenceGroup, mOtherKeys);
+                    popup.setSettingChangedListener(PhotoMenu.this);
+                    mPopup = popup;
+                    mPopupStatus = POPUP_FIRST_LEVEL;
+                }
+                mUI.showPopup(mPopup);
+            }
+        });
+        more.addItem(item);
+
         // White balance.
         if (group.findPreference(CameraSettings.KEY_WHITE_BALANCE) != null) {
             item = makeItem(CameraSettings.KEY_WHITE_BALANCE);
@@ -166,17 +201,22 @@ public class PhotoMenu extends PieController
     }
 
     @Override
-    // Hit when an item in a popup gets selected
+    // Hit when an item in the second-level popup gets selected
     public void onListPrefChanged(ListPreference pref) {
         if (mPopup != null) {
-            mUI.dismissPopup();
+            if (mPopupStatus == POPUP_SECOND_LEVEL) {
+                mUI.dismissPopup();
+            }
         }
         onSettingChanged(pref);
     }
 
     public void popupDismissed() {
+        // if the 2nd level popup gets dismissed
         if (mPopup != null) {
-            mPopup = null;
+            if (mPopupStatus == POPUP_SECOND_LEVEL) {
+                mPopup = null;
+            }
         }
     }
 
@@ -204,4 +244,22 @@ public class PhotoMenu extends PieController
         }
         super.onSettingChanged(pref);
     }
+
+    @Override
+    // Hit when an item in the first-level popup gets selected, then bring up
+    // the second-level popup
+    public void onPreferenceClicked(ListPreference pref) {
+        if (mPopupStatus != POPUP_FIRST_LEVEL) return;
+
+        LayoutInflater inflater = mActivity.getLayoutInflater();
+        ListPrefSettingPopup basic = (ListPrefSettingPopup) inflater.inflate(
+                R.layout.list_pref_setting_popup, null, false);
+        basic.initialize(pref);
+        basic.setSettingChangedListener(this);
+        mUI.dismissPopup();
+        mPopup = basic;
+        mUI.showPopup(mPopup);
+        mPopupStatus = POPUP_SECOND_LEVEL;
+    }
+
 }
