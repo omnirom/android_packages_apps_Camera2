@@ -164,6 +164,11 @@ public class PhotoMenu extends PieController
             more.addItem(item);
         }
         // burst mode
+        if (group.findPreference(CameraSettings.KEY_BURST_MODE) != null) {
+            item = makeItem(CameraSettings.KEY_BURST_MODE);
+            item.setLabel(res.getString(R.string.pref_camera_burst_title));
+            more.addItem(item);
+        }
         final ListPreference burstPref = group.findPreference(CameraSettings.KEY_BURST_MODE);
         mUI.updateBurstModeIcon(Integer.valueOf(burstPref.getValue()));
     }
