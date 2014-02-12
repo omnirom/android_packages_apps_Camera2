@@ -70,6 +70,7 @@ public class CameraSettings {
     public static final String KEY_PHOTOSPHERE_PICTURESIZE = "pref_photosphere_picturesize_key";
     public static final String KEY_STARTUP_MODULE_INDEX = "camera.startup_module";
     public static final String KEY_STORAGE = "pref_camera_storage_key";
+    public static final String KEY_BURST_MODE = "pref_camera_burst_key";
 
     public static final String EXPOSURE_DEFAULT_VALUE = "0";
 
