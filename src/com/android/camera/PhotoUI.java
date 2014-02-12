@@ -94,6 +94,8 @@ public class PhotoUI implements PieListener,
     private CameraControls mCameraControls;
     private AlertDialog mLocationDialog;
 
+    private ImageView mBurstModeView;
+
     // Small indicators which show the camera settings in the viewfinder.
     private OnScreenIndicators mOnScreenIndicators;
 
@@ -216,6 +218,7 @@ public class PhotoUI implements PieListener,
             mFaceView = (FaceView) mRootView.findViewById(R.id.face_view);
             setSurfaceTextureSizeChangedListener(mFaceView);
         }
+        mBurstModeView = (ImageView) mRootView.findViewById(R.id.burst_mode_icon);
         mCameraControls = (CameraControls) mRootView.findViewById(R.id.camera_controls);
         mAnimationManager = new AnimationManager();
     }
@@ -888,6 +891,29 @@ public class PhotoUI implements PieListener,
         Log.d(TAG, "Device flip detected.");
         mCameraControls.checkLayoutFlip();
         mController.updateCameraOrientation();
+    }
+
+    public void updateBurstModeIcon(int burstCount) {
+        if (burstCount == 1) {
+            mBurstModeView.setVisibility(View.GONE);
+            return;
+        }
+
+        switch (burstCount) {
+            case 5:
+                mBurstModeView.setImageResource(R.drawable.burst_mode_5);
+                break;
+            case 10:
+                mBurstModeView.setImageResource(R.drawable.burst_mode_10);
+                break;
+            case 15:
+                mBurstModeView.setImageResource(R.drawable.burst_mode_15);
+                break;
+            case 20:
+                mBurstModeView.setImageResource(R.drawable.burst_mode_20);
+                break;
+        }
+        mBurstModeView.setVisibility(View.VISIBLE);
     }
 
 }
