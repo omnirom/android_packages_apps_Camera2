@@ -477,17 +477,23 @@ public class PhotoModule
             Log.e(TAG, "Failed to open camera:" + mCameraId + ", aborting.");
             return;
         }
-        mParameters = mCameraDevice.getParameters();
-        initializeCapabilities();
+        
+	mParameters = mCameraDevice.getParameters();        
+	initializeCapabilities();
+	 /* Workaround for switching from front to back camera, mFocusAreaSupported should be forced to false before the preview is started, if not we have a forced reboot */
+	mFocusAreaSupported = false;
         CameraInfo info = CameraHolder.instance().getCameraInfo()[mCameraId];
         mMirror = (info.facing == CameraInfo.CAMERA_FACING_FRONT);
         mFocusManager.setMirror(mMirror);
         mFocusManager.setParameters(mInitialParams);
         setupPreview();
-
+	
+  	/* If camera support FocusArea enable it*/
+	mFocusAreaSupported = CameraUtil.isFocusAreaSupported(mInitialParams);
+	
         // reset zoom value index
         mZoomValue = 0;
-        openCameraCommon();
+	 openCameraCommon();
 
         // Start switch camera animation. Post a message because
         // onFrameAvailable from the old camera may already exist.
@@ -1957,8 +1963,8 @@ public class PhotoModule
 
     private void initializeCapabilities() {
         mInitialParams = mCameraDevice.getParameters();
-        mFocusAreaSupported = CameraUtil.isFocusAreaSupported(mInitialParams);
-        mMeteringAreaSupported = CameraUtil.isMeteringAreaSupported(mInitialParams);
+	 mFocusAreaSupported = CameraUtil.isFocusAreaSupported(mInitialParams);
+	 mMeteringAreaSupported = CameraUtil.isMeteringAreaSupported(mInitialParams);
         mAeLockSupported = CameraUtil.isAutoExposureLockSupported(mInitialParams);
         mAwbLockSupported = CameraUtil.isAutoWhiteBalanceLockSupported(mInitialParams);
         mContinuousFocusSupported = mInitialParams.getSupportedFocusModes().contains(
