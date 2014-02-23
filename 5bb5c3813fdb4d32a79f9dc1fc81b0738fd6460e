@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8b77b57d_50fc743a",
+        "filename": "src/com/android/camera/PhotoModule.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 490,
+      "author": {
+        "id": 1000008
+      },
+      "writtenOn": "2014-02-23T01:46:06Z",
+      "side": 1,
+      "message": "Lots of whitespace issues.",
+      "revId": "5bb5c3813fdb4d32a79f9dc1fc81b0738fd6460e",
+      "serverId": "56841c99-7c94-43d4-bf0b-cb4707e66d55",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8b77b57d_70f97049",
+        "filename": "src/com/android/camera/PhotoModule.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1966,
+      "author": {
+        "id": 1000008
+      },
+      "writtenOn": "2014-02-23T01:46:06Z",
+      "side": 1,
+      "message": "Why are you modifying this line?  It appears all you\u0027ve done is add whitespace issues.",
+      "revId": "5bb5c3813fdb4d32a79f9dc1fc81b0738fd6460e",
+      "serverId": "56841c99-7c94-43d4-bf0b-cb4707e66d55",
+      "unresolved": false
+    }
+  ]
+}
