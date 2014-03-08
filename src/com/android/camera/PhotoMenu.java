@@ -139,6 +139,7 @@ public class PhotoMenu extends PieController
                 timerPopup.setSettingChangedListener(PhotoMenu.this);
                 mUI.dismissPopup();
                 mPopup = timerPopup;
+                mPopupStatus = POPUP_SECOND_LEVEL;
                 mUI.showPopup(mPopup);
             }
         });
@@ -156,6 +157,7 @@ public class PhotoMenu extends PieController
                 popup.setSettingChangedListener(PhotoMenu.this);
                 mUI.dismissPopup();
                 mPopup = popup;
+                mPopupStatus = POPUP_SECOND_LEVEL;
                 mUI.showPopup(mPopup);
             }
         });
@@ -165,24 +167,27 @@ public class PhotoMenu extends PieController
         mOtherKeys = new String[] {
                 CameraSettings.KEY_STORAGE,
         };
-        item = makeItem(R.drawable.ic_settings_holo_light);
-        item.setLabel(res.getString(R.string.camera_menu_more_label).toUpperCase(locale));
-        item.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(PieItem item) {
-                if (mPopup == null || mPopupStatus != POPUP_FIRST_LEVEL) {
-                    LayoutInflater inflater = mActivity.getLayoutInflater();
-                    MoreSettingPopup popup = (MoreSettingPopup) inflater.inflate(
-                            R.layout.more_setting_popup, null, false);
-                    popup.initialize(mPreferenceGroup, mOtherKeys);
-                    popup.setSettingChangedListener(PhotoMenu.this);
-                    mPopup = popup;
-                    mPopupStatus = POPUP_FIRST_LEVEL;
+
+        if (!isEmptyMenu(mPreferenceGroup, mOtherKeys)){
+            item = makeItem(R.drawable.ic_settings_holo_light);
+            item.setLabel(res.getString(R.string.camera_menu_more_label).toUpperCase(locale));
+            item.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(PieItem item) {
+                    if (mPopup == null || mPopupStatus != POPUP_FIRST_LEVEL) {
+                        LayoutInflater inflater = mActivity.getLayoutInflater();
+                        MoreSettingPopup popup = (MoreSettingPopup) inflater.inflate(
+                                R.layout.more_setting_popup, null, false);
+                        popup.initialize(mPreferenceGroup, mOtherKeys);
+                        popup.setSettingChangedListener(PhotoMenu.this);
+                        mPopup = popup;
+                        mPopupStatus = POPUP_FIRST_LEVEL;
+                    }
+                    mUI.showPopup(mPopup);
                 }
-                mUI.showPopup(mPopup);
-            }
-        });
-        more.addItem(item);
+            });
+            more.addItem(item);
+        }
 
         // White balance.
         if (group.findPreference(CameraSettings.KEY_WHITE_BALANCE) != null) {
@@ -262,4 +267,13 @@ public class PhotoMenu extends PieController
         mPopupStatus = POPUP_SECOND_LEVEL;
     }
 
+    public boolean isEmptyMenu(PreferenceGroup group, String[] keys) {
+        for (int i = 0; i < keys.length; ++i) {
+            ListPreference pref = group.findPreference(keys[i]);
+            if (pref != null) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
