@@ -195,14 +195,28 @@ public class PhotoMenu extends PieController
             item.setLabel(res.getString(R.string.pref_camera_whitebalance_label));
             more.addItem(item);
         }
-        // Scene mode.
-        if (group.findPreference(CameraSettings.KEY_SCENE_MODE) != null) {
-            IconListPreference pref = (IconListPreference) group.findPreference(
-                    CameraSettings.KEY_SCENE_MODE);
-            pref.setUseSingleIcon(true);
-            item = makeItem(CameraSettings.KEY_SCENE_MODE);
+        // scene mode
+        final ListPreference scenePref = group.findPreference(CameraSettings.KEY_SCENE_MODE);
+        if (scenePref != null) {
+            item = makeItem(R.drawable.ic_sce);
+            item.setLabel(res.getString(R.string.pref_camera_scenemode_title).toUpperCase(locale));
+            item.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(PieItem item) {
+                    LayoutInflater inflater = mActivity.getLayoutInflater();
+                    ListPrefSettingPopup popup = (ListPrefSettingPopup) inflater.inflate(
+                            R.layout.list_pref_setting_popup, null, false);
+                    popup.initialize(scenePref);
+                    popup.setSettingChangedListener(PhotoMenu.this);
+                    mUI.dismissPopup();
+                    mPopup = popup;
+                    mPopupStatus = POPUP_SECOND_LEVEL;
+                    mUI.showPopup(mPopup);
+                }
+            });
             more.addItem(item);
         }
+        // burst mode
         if (group.findPreference(CameraSettings.KEY_BURST_MODE) != null) {
             IconListPreference burstPref = (IconListPreference) group.findPreference(
                     CameraSettings.KEY_BURST_MODE);
