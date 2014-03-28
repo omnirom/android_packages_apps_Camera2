@@ -166,6 +166,7 @@ public class PhotoMenu extends PieController
         // extra settings popup
         mOtherKeys = new String[] {
                 CameraSettings.KEY_STORAGE,
+                CameraSettings.KEY_SLOW_SHUTTER,
         };
 
         if (!isEmptyMenu(mPreferenceGroup, mOtherKeys)){

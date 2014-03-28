@@ -39,6 +39,7 @@ import com.android.camera2.R;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Arrays;
 
 /**
  *  Provides utilities and keys for Camera settings.
@@ -71,6 +72,7 @@ public class CameraSettings {
     public static final String KEY_STARTUP_MODULE_INDEX = "camera.startup_module";
     public static final String KEY_STORAGE = "pref_camera_storage_key";
     public static final String KEY_BURST_MODE = "pref_camera_burst_key";
+    public static final String KEY_SLOW_SHUTTER = "pref_camera_slow_shutter";
 
     public static final String EXPOSURE_DEFAULT_VALUE = "0";
 
@@ -179,6 +181,7 @@ public class CameraSettings {
         ListPreference cameraHdr = group.findPreference(KEY_CAMERA_HDR);
         ListPreference cameraHdrPlus = group.findPreference(KEY_CAMERA_HDR_PLUS);
         ListPreference storage = group.findPreference(KEY_STORAGE);
+        ListPreference slowShutter = group.findPreference(KEY_SLOW_SHUTTER);
 
         // Since the screen could be loaded from different resources, we need
         // to check if the preference is available here
@@ -231,6 +234,9 @@ public class CameraSettings {
         }
         if (storage != null) {
             buildStorage(group, storage);
+        }
+        if (slowShutter != null) {
+            filterUnsupportedOptions(group, slowShutter, getSupportedSlowShutter(mParameters));
         }
 
         int frontCameraId = CameraHolder.instance().getFrontCameraId();
@@ -575,5 +581,24 @@ public class CameraSettings {
         if (CameraUtil.needsEarlyVideoSize()) {
             params.set("video-size", profile.videoFrameWidth + "x" + profile.videoFrameHeight);
         }
+    }
+
+    public static List<String> getSupportedSlowShutter(Parameters params) {
+        String p = params.get("slow-shutter-values");
+        if (p != null) {
+            return Arrays.asList(p.split(","));
+        }
+        return null;
+    }
+
+    public static void setSlowShutter(Parameters params, String value) {
+        if (getSupportedSlowShutter(params) != null) {
+            params.set("slow-shutter", value);
+        }
+    }
+
+    public static boolean isSlowShutterEnabled(Parameters params) {
+        return (getSupportedSlowShutter(params) != null) &&
+                !"slow-shutter-off".equals(params.get("slow-shutter"));
     }
 }
