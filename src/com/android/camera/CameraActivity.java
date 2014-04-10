@@ -1329,6 +1329,7 @@ public class CameraActivity extends Activity
     public void onBackPressed() {
         if (!mFilmStripView.inCameraFullscreen()) {
             mFilmStripView.getController().goToFirstItem();
+            mCurrentModule.resizeForPreviewAspectRatio();
         } else if (!mCurrentModule.onBackPressed()) {
             super.onBackPressed();
         }
