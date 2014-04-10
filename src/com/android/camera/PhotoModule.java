@@ -460,6 +460,7 @@ public class PhotoModule
         int height = root.getHeight();
         mFocusManager.setPreviewSize(width, height);
         openCameraCommon();
+        resizeForPreviewAspectRatio();
     }
 
     private void switchCamera() {
@@ -497,6 +498,7 @@ public class PhotoModule
 
         // reset zoom value index
         mZoomValue = 0;
+        resizeForPreviewAspectRatio();
         openCameraCommon();
 
         // Start switch camera animation. Post a message because
@@ -538,6 +540,25 @@ public class PhotoModule
             editor.apply();
         }
     }
+
+    void setPreviewFrameLayoutCameraOrientation(){
+        CameraInfo info = CameraHolder.instance().getCameraInfo()[mCameraId];
+        //if camera mount angle is 0 or 180, we want to resize preview
+        if (info.orientation % 180 == 0){
+            mUI.cameraOrientationPreviewResize(true);
+        } else{
+            mUI.cameraOrientationPreviewResize(false);
+        }
+    }
+
+    @Override
+    public void resizeForPreviewAspectRatio() {
+        setPreviewFrameLayoutCameraOrientation();
+        Size size = mParameters.getPictureSize();
+        Log.e(TAG,"Width = "+ size.width+ "Height = "+size.height);
+        mUI.setAspectRatio((float) size.width / size.height);
+    }
+
 
     private void keepMediaProviderInstance() {
         // We want to keep a reference to MediaProvider in camera's lifecycle.
@@ -1377,6 +1398,7 @@ public class PhotoModule
     public void onConfigurationChanged(Configuration newConfig) {
         Log.v(TAG, "onConfigurationChanged");
         setDisplayOrientation();
+        resizeForPreviewAspectRatio();
     }
 
     @Override
@@ -1884,6 +1906,7 @@ public class PhotoModule
         } else if (isCameraIdle()) {
             if (mRestartPreview) {
                 Log.d(TAG, "Restarting preview");
+                resizeForPreviewAspectRatio();
                 startPreview();
                 mRestartPreview = false;
             }
@@ -1935,6 +1958,7 @@ public class PhotoModule
         }
 
         setCameraParametersWhenIdle(UPDATE_PARAM_PREFERENCE);
+        resizeForPreviewAspectRatio();
         mUI.updateOnScreenIndicators(mParameters, mPreferenceGroup, mPreferences);
     }
 
