@@ -303,6 +303,7 @@ public class PhotoModule
     private String mCurrTouchAfAec = Parameters.TOUCH_AF_AEC_ON;
 
     private final Handler mHandler = new MainHandler();
+    private MessageQueue.IdleHandler mIdleHandler = null;
 
     private PreferenceGroup mPreferenceGroup;
 
@@ -716,6 +717,7 @@ public class PhotoModule
         }
 
         mFirstTimeInitialized = true;
+        Log.d(TAG, "addIdleHandler in first time initialization");
         addIdleHandler();
 
         mActivity.updateStorageSpaceAndHint();
@@ -750,14 +752,26 @@ public class PhotoModule
     }
 
     private void addIdleHandler() {
-        MessageQueue queue = Looper.myQueue();
-        queue.addIdleHandler(new MessageQueue.IdleHandler() {
-            @Override
-            public boolean queueIdle() {
-                Storage.ensureOSXCompatible();
-                return false;
-            }
-        });
+        if (mIdleHandler == null) {
+            mIdleHandler = new MessageQueue.IdleHandler() {
+                @Override
+                public boolean queueIdle() {
+                    Storage.ensureOSXCompatible();
+                    return false;
+                }
+            };
+
+            MessageQueue queue = Looper.myQueue();
+            queue.addIdleHandler(mIdleHandler);
+        }
+    }
+
+    private void removeIdleHandler() {
+        if (mIdleHandler != null) {
+            MessageQueue queue = Looper.myQueue();
+            queue.removeIdleHandler(mIdleHandler);
+            mIdleHandler = null;
+        }
     }
 
     @Override
@@ -1857,6 +1871,9 @@ public class PhotoModule
         if (msensor != null) {
             mSensorManager.unregisterListener(this, msensor);
         }
+
+        Log.d(TAG, "remove idle handleer in onPause");
+        removeIdleHandler();
     }
 
     @Override
