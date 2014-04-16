@@ -197,6 +197,7 @@ public class PhotoModule
 
     private static final int MINIMUM_BRIGHTNESS = 0;
     private static final int MAXIMUM_BRIGHTNESS = 6;
+    private static final int DEFAULT_BRIGHTNESS = 3;
     private int mbrightness = 3;
     private int mbrightness_step = 1;
     private ProgressBar brightnessProgressBar;
@@ -486,6 +487,9 @@ public class PhotoModule
             seeker.setOnSeekBarChangeListener(mSeekListener);
         }
         brightnessProgressBar.setMax(MAXIMUM_BRIGHTNESS);
+        mbrightness = mPreferences.getInt(
+                 CameraSettings.KEY_BRIGHTNESS,
+                 DEFAULT_BRIGHTNESS);
         brightnessProgressBar.setProgress(mbrightness);
         skinToneSeekBar = (SeekBar) mRootView.findViewById(R.id.skintoneseek);
         skinToneSeekBar.setOnSeekBarChangeListener(mskinToneSeekListener);
@@ -2030,6 +2034,9 @@ public class PhotoModule
                     mCameraDevice.setParameters(mParameters);
                 }
                 brightnessProgressBar.setProgress(mbrightness);
+                Editor editor = mPreferences.edit();
+                editor.putInt(CameraSettings.KEY_BRIGHTNESS, mbrightness);
+                editor.apply();
                 brightnessProgressBar.setVisibility(View.VISIBLE);
             }
             break;
@@ -2045,6 +2052,9 @@ public class PhotoModule
                     mCameraDevice.setParameters(mParameters);
                 }
                 brightnessProgressBar.setProgress(mbrightness);
+                Editor editor = mPreferences.edit();
+                editor.putInt(CameraSettings.KEY_BRIGHTNESS, mbrightness);
+                editor.apply();
                 brightnessProgressBar.setVisibility(View.VISIBLE);
             }
             break;
