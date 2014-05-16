@@ -920,4 +920,8 @@ public class PhotoUI implements PieListener,
         mController.updateCameraOrientation();
     }
 
+    public void setPreference(String key, String value) {
+        mMenu.setPreference(key, value);
+    }
+
 }
