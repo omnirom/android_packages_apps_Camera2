@@ -38,7 +38,7 @@ import android.view.animation.Transformation;
 
 import com.android.camera.drawable.TextDrawable;
 import com.android.camera.ui.ProgressRenderer.VisibilityListener;
-import com.android.camera2.R;
+import com.android.aospcamera2.R;
 
 import java.util.ArrayList;
 import java.util.List;

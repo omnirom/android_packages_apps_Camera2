@@ -57,7 +57,7 @@ import com.android.camera.CameraDisabledException;
 import com.android.camera.CameraHolder;
 import com.android.camera.CameraManager;
 import com.android.camera.util.IntentHelper;
-import com.android.camera2.R;
+import com.android.aospcamera2.R;
 
 import java.io.Closeable;
 import java.io.IOException;

@@ -32,7 +32,7 @@ import android.view.View;
 
 import com.android.camera.PhotoUI;
 import com.android.camera.util.CameraUtil;
-import com.android.camera2.R;
+import com.android.aospcamera2.R;
 
 public class FaceView extends View
     implements FocusIndicator, Rotatable,

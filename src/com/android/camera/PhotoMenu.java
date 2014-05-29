@@ -30,7 +30,7 @@ import com.android.camera.ui.MoreSettingPopup;
 import com.android.camera.ui.PieItem;
 import com.android.camera.ui.PieItem.OnClickListener;
 import com.android.camera.ui.PieRenderer;
-import com.android.camera2.R;
+import com.android.aospcamera2.R;
 
 public class PhotoMenu extends PieController
         implements MoreSettingPopup.Listener,
