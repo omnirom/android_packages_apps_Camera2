@@ -31,7 +31,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.android.camera.data.MediaDetails;
-import com.android.camera2.R;
+import com.android.aospcamera2.R;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;

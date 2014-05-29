@@ -28,7 +28,7 @@ import android.widget.TextView;
 
 import com.android.camera.IconListPreference;
 import com.android.camera.ListPreference;
-import com.android.camera2.R;
+import com.android.aospcamera2.R;
 
 import java.text.NumberFormat;
 import java.util.Locale;
