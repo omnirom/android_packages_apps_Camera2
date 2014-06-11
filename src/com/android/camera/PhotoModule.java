@@ -25,6 +25,8 @@ import android.content.Intent;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera.CameraInfo;
@@ -69,6 +71,7 @@ import com.android.camera.util.GcamHelper;
 import com.android.camera.util.UsageStatistics;
 import com.android.camera2.R;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -743,22 +746,28 @@ public class PhotoModule
                     setCameraState(IDLE);
                 }
             }
-            ExifInterface exif = Exif.getExif(jpegData);
-            int orientation = Exif.getOrientation(exif);
+            final ExifInterface exif = Exif.getExif(jpegData);
+            final int orientation = Exif.getOrientation(exif);
 
             if (!mIsImageCaptureIntent) {
                 // Calculate the width and the height of the jpeg.
                 Size s = mParameters.getPictureSize();
-                int width, height;
-                if ((mJpegRotation + orientation) % 180 == 0) {
-                    width = s.width;
-                    height = s.height;
+                boolean isSamsungHDR =
+                    (mSceneMode == CameraUtil.SCENE_MODE_HDR && CameraUtil.needSamsungHDRFormat());
+
+                int widths, heights;
+                if ((mJpegRotation + orientation) % 180 == 0 || isSamsungHDR) {
+                    widths = s.width;
+                    heights = s.height;
                 } else {
-                    width = s.height;
-                    height = s.width;
+                    widths = s.height;
+                    heights = s.width;
                 }
+
+                final int width = widths;
+                final int height = heights;
                 NamedEntity name = mNamedImages.getNextNameEntity();
-                String title = (name == null) ? null : name.title;
+                String titleTemp = (name == null) ? null : name.title;
                 long date = (name == null) ? -1 : name.date;
 
                 // Handle debug mode outputs
@@ -767,10 +776,12 @@ public class PhotoModule
                     saveToDebugUri(jpegData);
 
                     // Adjust the title of the debug image shown in mediastore.
-                    if (title != null) {
-                        title = DEBUG_IMAGE_PREFIX + title;
+                    if (titleTemp != null) {
+                        titleTemp = DEBUG_IMAGE_PREFIX + titleTemp;
                     }
                 }
+
+                final String title = titleTemp;
 
                 if (title == null) {
                     Log.e(TAG, "Unbalanced name/data pair");
@@ -787,9 +798,37 @@ public class PhotoModule
                         exif.setTag(directionRefTag);
                         exif.setTag(directionTag);
                     }
-                    mActivity.getMediaSaveService().addImage(
+                    final String mPictureFormat = mParameters.get(KEY_PICTURE_FORMAT);
+                    if (isSamsungHDR) {
+                        final long finalDate = date;
+                        new Thread(new Runnable() {
+                            public void run() {
+                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                Bitmap bm = CameraUtil.decodeYUV422P(jpegData, width, height);
+                                if (mJpegRotation != 0) {
+                                    Matrix matrix = new Matrix();
+                                    matrix.postRotate(mJpegRotation);
+                                    bm = Bitmap.createBitmap(bm, 0, 0, width, height, matrix, true);
+                                }
+
+                                bm.compress(Bitmap.CompressFormat.JPEG,
+                                            90,
+                                            baos);
+
+                                boolean rotated = (mJpegRotation % 180) != 0;
+
+                                mActivity.getMediaSaveService().addImage(
+                                    baos.toByteArray(), title, finalDate, mLocation,
+                                    rotated ? height : width, rotated ? width : height,
+                                    orientation, exif, mOnMediaSavedListener, mContentResolver, mPictureFormat);
+                            }
+                        }).start();
+
+                    } else {
+                        mActivity.getMediaSaveService().addImage(
                             jpegData, title, date, mLocation, width, height,
                             orientation, exif, mOnMediaSavedListener, mContentResolver);
+                    }
                 }
                 // Animate capture with real jpeg data instead of a preview frame.
                 if (!mBurstShotInProgress) {
@@ -990,6 +1029,17 @@ public class PhotoModule
                 CameraSettings.KEY_FLASH_MODE, flashMode,
                 CameraSettings.KEY_WHITE_BALANCE, whiteBalance,
                 CameraSettings.KEY_FOCUS_MODE, focusMode);
+        if (CameraUtil.needSamsungHDRFormat()){
+            if (mSceneMode == CameraUtil.SCENE_MODE_HDR) {
+                mUI.overrideSettings(CameraSettings.KEY_EXPOSURE,
+                        String.valueOf(mParameters.getMaxExposureCompensation()));
+                mParameters.setExposureCompensation(mParameters.getMaxExposureCompensation());
+            } else {
+                mUI.overrideSettings(CameraSettings.KEY_EXPOSURE, null);
+                mParameters.setExposureCompensation(CameraSettings.readExposure(mPreferences));
+            }
+            mCameraDevice.setParameters(mParameters);
+        }
     }
 
     private void loadCameraPreferences() {
@@ -1788,7 +1838,9 @@ public class PhotoModule
         int max = mParameters.getMaxExposureCompensation();
         int min = mParameters.getMinExposureCompensation();
         if (value >= min && value <= max) {
-            mParameters.setExposureCompensation(value);
+            if (mSceneMode != CameraUtil.SCENE_MODE_HDR || !CameraUtil.needSamsungHDRFormat()) {
+                mParameters.setExposureCompensation(value);
+            }
         } else {
             Log.w(TAG, "invalid exposure range: " + value);
         }
