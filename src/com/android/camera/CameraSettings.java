@@ -123,8 +123,6 @@ public class CameraSettings {
     public static final String KEY_QC_DIS_MODE = "dis";
 
     public static final String KEY_INTERNAL_PREVIEW_RESTART = "internal-restart";
-    public static final String KEY_QC_ZSL_HDR_SUPPORTED = "zsl-hdr-supported";
-    public static final String KEY_QC_LONGSHOT_SUPPORTED = "longshot-supported";
     private static final String TRUE = "true";
     private static final String FALSE = "false";
 
@@ -364,7 +362,6 @@ public class CameraSettings {
         ListPreference videoSnapSize = group.findPreference(KEY_VIDEO_SNAPSHOT_SIZE);
         ListPreference videoHdr = group.findPreference(KEY_VIDEO_HDR);
         ListPreference pictureFormat = group.findPreference(KEY_PICTURE_FORMAT);
-        ListPreference longShot = group.findPreference(KEY_LONGSHOT);
 
         if (touchAfAec != null) {
             filterUnsupportedOptions(group,
@@ -445,9 +442,6 @@ public class CameraSettings {
         if(advancedFeatures != null) {
             filterUnsupportedOptions(group,
                     advancedFeatures, getSupportedAdvancedFeatures(mParameters));
-        }
-        if (longShot!= null && !isLongshotSupported(mParameters)) {
-            removePreference(group, longShot.getKey());
         }
 
         if (contrast != null && !CameraUtil.isSupported(mParameters, "contrast")) {
@@ -923,28 +917,6 @@ public class CameraSettings {
         boolean ret = false;
         if (null != params) {
             String val = params.get(KEY_INTERNAL_PREVIEW_RESTART);
-            if ((null != val) && (TRUE.equals(val))) {
-                ret = true;
-            }
-        }
-        return ret;
-    }
-
-    public static boolean isLongshotSupported(Parameters params) {
-        boolean ret = false;
-        if (null != params) {
-            String val = params.get(KEY_QC_LONGSHOT_SUPPORTED);
-            if ((null != val) && (TRUE.equals(val))) {
-                ret = true;
-            }
-        }
-        return ret;
-    }
-
-    public static boolean isZSLHDRSupported(Parameters params) {
-        boolean ret = false;
-        if (null != params) {
-            String val = params.get(KEY_QC_ZSL_HDR_SUPPORTED);
             if ((null != val) && (TRUE.equals(val))) {
                 ret = true;
             }
