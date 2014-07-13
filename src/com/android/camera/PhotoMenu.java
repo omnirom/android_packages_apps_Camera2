@@ -271,18 +271,7 @@ public class PhotoMenu extends PieController
      String optiZoomOn = mActivity.getString(R.string.
          pref_camera_advanced_feature_value_optizoom_on);
 
-     if ((zsl != null) && Parameters.ZSL_OFF.equals(zsl)) {
-         popup3.overrideSettings(CameraSettings.KEY_ADVANCED_FEATURES,
-                 mActivity.getString(R.string.pref_camera_advanced_feature_default));
-
-         popup3.setPreferenceEnabled(CameraSettings.KEY_ADVANCED_FEATURES,false);
-         if (mHdrItem != null) {
-             mHdrItem.setEnabled(true);
-         }
-         if (mHdrPlusItem != null) {
-             mHdrPlusItem.setEnabled(true);
-         }
-     } else {
+ 
          if ((advancedFeatures != null) && (advancedFeatures.equals(ubiFocusOn) ||
                  advancedFeatures.equals(chromaFlashOn) ||
                  advancedFeatures.equals(optiZoomOn))) {
@@ -310,7 +299,6 @@ public class PhotoMenu extends PieController
                 mHdrPlusItem.setEnabled(true);
              }
          }
-     }
      }
 
     public void popupDismissed() {
