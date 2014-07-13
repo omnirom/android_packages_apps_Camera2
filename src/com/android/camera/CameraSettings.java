@@ -128,8 +128,6 @@ public class CameraSettings {
     private static final String TRUE = "true";
     private static final String FALSE = "false";
 
-    public static final String KEY_AUTO_HDR = "pref_camera_auto_hdr_key";
-
     //for flip
     public static final String KEY_QC_PREVIEW_FLIP = "preview-flip";
     public static final String KEY_QC_VIDEO_FLIP = "video-flip";
@@ -367,7 +365,6 @@ public class CameraSettings {
         ListPreference videoHdr = group.findPreference(KEY_VIDEO_HDR);
         ListPreference pictureFormat = group.findPreference(KEY_PICTURE_FORMAT);
         ListPreference longShot = group.findPreference(KEY_LONGSHOT);
-        ListPreference auto_hdr = group.findPreference(KEY_AUTO_HDR);
 
         if (touchAfAec != null) {
             filterUnsupportedOptions(group,

@@ -26,7 +26,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.view.SurfaceHolder;
 import android.hardware.Camera.CameraDataCallback;
-import android.hardware.Camera.CameraMetaDataCallback;
 
 /**
  * An interface which provides possible camera device operations.
@@ -165,12 +164,6 @@ public interface CameraManager {
          * is released and can continue on.
          */
         public void release();
-
-        /**
-         * Sets the metadata cb
-         * @cb Metadata callback object
-        */
-        public void setMetadataCb (CameraMetaDataCallback cb);
 
         /**
          * Reconnects to the camera device.
