@@ -2542,19 +2542,6 @@ public class PhotoModule
             editor.apply();
             mUI.overrideSettings(CameraSettings.KEY_PICTURE_FORMAT, mActivity.getString(R.string.pref_camera_picture_format_entry_jpeg));
 
-            //Try to set CAF for ZSL
-            if(CameraUtil.isSupported(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE,
-                    mParameters.getSupportedFocusModes()) && !mFocusManager.isTouch()) {
-                mFocusManager.overrideFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-                mParameters.setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-            } else if (mFocusManager.isTouch()) {
-                mFocusManager.overrideFocusMode(null);
-                mParameters.setFocusMode(mFocusManager.getFocusMode());
-            } else {
-                // If not supported use the current mode
-                mFocusManager.overrideFocusMode(mFocusManager.getFocusMode());
-            }
-
             if(!pictureFormat.equals(PIXEL_FORMAT_JPEG)) {
                      mActivity.runOnUiThread(new Runnable() {
                      public void run() {
@@ -2576,8 +2563,6 @@ public class PhotoModule
             mSnapshotMode = CameraInfo.CAMERA_SUPPORT_MODE_NONZSL;
             mParameters.setCameraMode(0);
             mFocusManager.setZslEnable(false);
-            mFocusManager.overrideFocusMode(null);
-            mParameters.setFocusMode(mFocusManager.getFocusMode());
         }
         // Set face detetction parameter.
         String faceDetection = mPreferences.getString(

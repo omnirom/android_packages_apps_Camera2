@@ -97,6 +97,7 @@ public class PhotoMenu extends PieController
                 CameraSettings.KEY_RECORD_LOCATION,
                 CameraSettings.KEY_PICTURE_SIZE,
                 CameraSettings.KEY_HISTOGRAM,
+                CameraSettings.KEY_FOCUS_MODE,
                 CameraSettings.KEY_JPEG_QUALITY,
                 CameraSettings.KEY_ZSL,
                 CameraSettings.KEY_TIMER,
@@ -126,7 +127,6 @@ public class PhotoMenu extends PieController
                 CameraSettings.KEY_EXPOSURE,
                 CameraSettings.KEY_WHITE_BALANCE,
                 CameraSettings.KEY_FLASH_MODE,
-                CameraSettings.KEY_FOCUS_MODE,
                 CameraSettings.KEY_REDEYE_REDUCTION,
                 CameraSettings.KEY_AE_BRACKET_HDR
         };
@@ -248,10 +248,8 @@ public class PhotoMenu extends PieController
      String sceneMode = (pref != null) ? pref.getValue() : null;
      pref = mPreferenceGroup.findPreference(CameraSettings.KEY_FACE_DETECTION);
      String faceDetection = (pref != null) ? pref.getValue() : null;
-     pref = mPreferenceGroup.findPreference(CameraSettings.KEY_ZSL);
-     String zsl = (pref != null) ? pref.getValue() : null;
      if ((sceneMode != null) && !Parameters.SCENE_MODE_AUTO.equals(sceneMode)){
-         popup3.setPreferenceEnabled(CameraSettings.KEY_FOCUS_MODE,false);
+         popup1.setPreferenceEnabled(CameraSettings.KEY_FOCUS_MODE,false);
          popup2.setPreferenceEnabled(CameraSettings.KEY_AUTOEXPOSURE,false);
          popup2.setPreferenceEnabled(CameraSettings.KEY_TOUCH_AF_AEC,false);
          popup2.setPreferenceEnabled(CameraSettings.KEY_SATURATION,false);
@@ -261,9 +259,6 @@ public class PhotoMenu extends PieController
          popup3.setPreferenceEnabled(CameraSettings.KEY_FLASH_MODE,false);
          popup3.setPreferenceEnabled(CameraSettings.KEY_WHITE_BALANCE,false);
          popup3.setPreferenceEnabled(CameraSettings.KEY_EXPOSURE,false);
-     }
-     if ((zsl != null) && Parameters.ZSL_ON.equals(zsl)) {
-         popup3.setPreferenceEnabled(CameraSettings.KEY_FOCUS_MODE,false);
      }
      if ((faceDetection != null) && !Parameters.FACE_DETECTION_ON.equals(faceDetection)){
          popup2.setPreferenceEnabled(CameraSettings.KEY_FACE_RECOGNITION,false);
