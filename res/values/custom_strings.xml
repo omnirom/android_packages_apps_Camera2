@@ -38,6 +38,8 @@
     <string name="pref_camera_picturesize_entry_4_5mp">4.5M pixels</string>
     <!-- Settings screen, dialog choice for 3.7 megapixels wide picture size [CHAR LIMIT=15] -->
     <string name="pref_camera_picturesize_entry_3_7mp_wide">3.7M pixels (16:9)</string>
+    <!-- Settings screen, dialog choice for 3.1 megapixels picture size [CHAR LIMIT=15] -->
+    <string name="pref_camera_picturesize_entry_3_1mp">3.1M pixels</string>
     <!-- Settings screen, dialog choice for 2.5 megapixels picture size [CHAR LIMIT=15] -->
     <string name="pref_camera_picturesize_entry_2_5mp">2.5M pixels</string>
     <!-- Settings screen, dialog choice for 2.1 megapixels wide picture size [CHAR LIMIT=15] -->
@@ -46,6 +48,8 @@
     <string name="pref_camera_picturesize_entry_1_9mp">1.9M pixels</string>
     <!-- Settings screen, dialog choice for 1.5 megapixels picture size [CHAR LIMIT=15] -->
     <string name="pref_camera_picturesize_entry_1_5mp">1.5M pixels</string>
+    <!-- Settings screen, dialog choice for 1.2 megapixels picture size [CHAR LIMIT=15] -->
+    <string name="pref_camera_picturesize_entry_1_2mp">1.2M pixels</string>
     <!-- Settings screen, dialog choice for WXGA picture size [CHAR LIMIT=15] -->
     <string name="pref_camera_picturesize_entry_wxga">WXGA</string>
     <!-- Settings screen, dialog choice for XGA picture size [CHAR LIMIT=15] -->
