@@ -633,8 +633,8 @@ public class PhotoModule
                     mActivity.getString(R.string.setting_off_value));
         }
         updateCameraSettings();
+        updateHdrMode();
         showTapToFocusToastIfNeeded();
-
 
     }
 
@@ -1450,6 +1450,17 @@ public class PhotoModule
                                    exposureCompensation, touchAfAec, null,
                                    null, null, null, colorEfect,
                                    sceneMode, redeyeReduction, aeBracketing);
+        }
+    }
+
+    private void updateHdrMode() {
+        String zsl = mPreferences.getString(CameraSettings.KEY_ZSL,
+                         mActivity.getString(R.string.pref_camera_zsl_default));
+        if (zsl.equals("on")) {
+            mUI.overrideSettings(CameraSettings.KEY_CAMERA_HDR,
+                                      mParameters.getAEBracket());
+        } else {
+            mUI.overrideSettings(CameraSettings.KEY_CAMERA_HDR, null);
         }
     }
 
@@ -2508,6 +2519,8 @@ public class PhotoModule
 
         String zsl = mPreferences.getString(CameraSettings.KEY_ZSL,
                                   mActivity.getString(R.string.pref_camera_zsl_default));
+        String hdr = mPreferences.getString(CameraSettings.KEY_CAMERA_HDR,
+                mActivity.getString(R.string.pref_camera_hdr_default));
         mParameters.setZSLMode(zsl);
         if(zsl.equals("on")) {
             //Switch on ZSL Camera mode
@@ -2515,9 +2528,16 @@ public class PhotoModule
             mParameters.setCameraMode(1);
             mFocusManager.setZslEnable(true);
 
+<<<<<<< HEAD
             //Raw picture format is not supported under ZSL mode
             mParameters.set(KEY_PICTURE_FORMAT, PIXEL_FORMAT_JPEG);
+=======
+            // Currently HDR is not supported under ZSL mode
+>>>>>>> parent of be11c6b... Camera2: Enable HDR for zsl mode
             Editor editor = mPreferences.edit();
+            editor.putString(CameraSettings.KEY_AE_BRACKET_HDR, mActivity.getString(R.string.setting_off_value));
+
+            //Raw picture format is not supported under ZSL mode
             editor.putString(CameraSettings.KEY_PICTURE_FORMAT, mActivity.getString(R.string.pref_camera_picture_format_value_jpeg));
             editor.apply();
             mUI.overrideSettings(CameraSettings.KEY_PICTURE_FORMAT, mActivity.getString(R.string.pref_camera_picture_format_entry_jpeg));
@@ -2539,6 +2559,15 @@ public class PhotoModule
                      mActivity.runOnUiThread(new Runnable() {
                      public void run() {
                 Toast.makeText(mActivity, R.string.error_app_unsupported_raw,
+                    Toast.LENGTH_SHORT).show();
+                         }
+                    });
+            }
+
+            if(hdr.equals(mActivity.getString(R.string.setting_on_value))) {
+                     mActivity.runOnUiThread(new Runnable() {
+                     public void run() {
+                Toast.makeText(mActivity, R.string.error_app_unsupported_hdr_zsl,
                     Toast.LENGTH_SHORT).show();
                          }
                     });
@@ -2893,6 +2922,7 @@ public class PhotoModule
             }
             mRestartPreview = false;
             updateCameraSettings();
+            updateHdrMode();
             mUpdateSet = 0;
         } else {
             if (!mHandler.hasMessages(SET_CAMERA_PARAMETERS_WHEN_IDLE)) {
