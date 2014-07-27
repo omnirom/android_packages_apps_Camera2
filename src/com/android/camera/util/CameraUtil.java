@@ -162,6 +162,9 @@ public class CameraUtil {
     // HTC camcorder mode
     private static boolean sHTCCamMode;
 
+    // oppo app mode
+    private static boolean sOppoCamMode;
+
     // For setting video size before recording starts
     private static boolean sEarlyVideoSize;
 
@@ -194,6 +197,7 @@ public class CameraUtil {
         sNoFaceDetectOnFrontCamera = context.getResources().getBoolean(R.bool.noFaceDetectOnFrontCamera);
         sNoFocusModeChangeForTouch = context.getResources().getBoolean(
                 R.bool.useContinuosFocusForTouch);
+        sOppoCamMode = context.getResources().getBoolean(R.bool.needsOppoCamMode);
     }
 
     public static int dpToPixel(int dp) {
@@ -206,6 +210,10 @@ public class CameraUtil {
 
     public static boolean useHTCCamMode() {
         return sHTCCamMode;
+    }
+
+    public static boolean useOppoCamMode() {
+        return sOppoCamMode;
     }
 
     public static boolean useSamsungCamMode() {
