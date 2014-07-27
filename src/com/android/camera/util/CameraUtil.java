@@ -162,6 +162,9 @@ public class CameraUtil {
     // HTC camcorder mode
     private static boolean sHTCCamMode;
 
+    // Oppo camera mode
+    private static boolean sOppoCamMode;
+
     // For setting video size before recording starts
     private static boolean sEarlyVideoSize;
 
@@ -189,6 +192,7 @@ public class CameraUtil {
         // These come from the config, but are needed before parameters are set.
         sSamsungCamMode = context.getResources().getBoolean(R.bool.needsSamsungCamMode);
         sHTCCamMode = context.getResources().getBoolean(R.bool.needsHTCCamMode);
+        sOppoCamMode = context.getResources().getBoolean(R.bool.needsOppoCamMode);
         sEarlyVideoSize = context.getResources().getBoolean(R.bool.needsEarlyVideoSize);
         sEnableZSL = context.getResources().getBoolean(R.bool.enableZSL);
         sNoFaceDetectOnFrontCamera = context.getResources().getBoolean(R.bool.noFaceDetectOnFrontCamera);
@@ -210,6 +214,10 @@ public class CameraUtil {
 
     public static boolean useSamsungCamMode() {
         return sSamsungCamMode;
+    }
+
+    public static boolean useOppoCamMode() {
+        return sOppoCamMode;
     }
 
     public static boolean needsEarlyVideoSize() {
