@@ -118,6 +118,9 @@ public class CameraUtil {
     /** Has to be in sync with the receiving MovieActivity. */
     public static final String KEY_TREAT_UP_AS_BACK = "treat-up-as-back";
 
+    public static final String KEY_PREVIEW_FORMAT = "preview-format";
+    public static final String QC_FORMAT_NV12_VENUS = "nv12-venus";
+    
     public static boolean isSupported(String value, List<String> supported) {
         return supported == null ? false : supported.indexOf(value) >= 0;
     }
@@ -176,6 +179,8 @@ public class CameraUtil {
 
     // Do not change the focus mode when TTF is used
     private static boolean sNoFocusModeChangeForTouch;
+
+    private static String sDefaultPreviewFormat;
 
     private CameraUtil() {
     }
@@ -1040,5 +1045,13 @@ public class CameraUtil {
             ret = ret + "\t" + elems[i].toString() + '\n';
         }
         return ret;
+    }
+
+    public static void setDefaultPreviewFormat(String previewFormat) {
+        sDefaultPreviewFormat = previewFormat;
+    }
+
+    public static String getDefaultPreviewFormat() {
+        return sDefaultPreviewFormat;
     }
 }

@@ -168,8 +168,6 @@ public class VideoModule implements CameraModule,
 
     private LocationManager mLocationManager;
     private OrientationManager mOrientationManager;
-    private static final String KEY_PREVIEW_FORMAT = "preview-format";
-    private static final String QC_FORMAT_NV12_VENUS = "nv12-venus";
     private int mPendingSwitchCameraId;
     private final Handler mHandler = new MainHandler();
     private VideoUI mUI;
@@ -1558,10 +1556,16 @@ public class VideoModule implements CameraModule,
             mParameters.set("video-stabilization", "true");
         }
 
-       // if 4K recoding is enabled, set preview format to NV12_VENUS
-       if (is4KEnabled()) {
-           Log.v(TAG, "4K enabled, preview format set to NV12_VENUS");
-           mParameters.set(KEY_PREVIEW_FORMAT, QC_FORMAT_NV12_VENUS);
+        // if 4K recoding is enabled, set preview format to NV12_VENUS
+        if (is4KEnabled()) {
+            String previewFormat = mParameters.get(CameraUtil.KEY_PREVIEW_FORMAT);
+            if (!previewFormat.equals(CameraUtil.QC_FORMAT_NV12_VENUS)) {
+                Log.v(TAG, "4K enabled, preview format set to NV12_VENUS");
+                if (CameraUtil.getDefaultPreviewFormat() == null) {
+                    CameraUtil.setDefaultPreviewFormat(previewFormat);
+                }
+                mParameters.set(CameraUtil.KEY_PREVIEW_FORMAT, CameraUtil.QC_FORMAT_NV12_VENUS);
+            }
        }
 
         // Set picture size.

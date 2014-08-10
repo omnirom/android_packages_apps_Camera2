@@ -427,6 +427,14 @@ public class WideAnglePanoramaModule
 
         parameters.set(CameraUtil.RECORDING_HINT, CameraUtil.FALSE);
 
+        // getPixelFormatInfo will crash if preview-format is something unknown
+        // e.g. nv12-venus which is required for 4k videos
+        // we can only hope that the default value that we save before changing it
+        // in VideoModule is a valid one here
+        if (CameraUtil.getDefaultPreviewFormat() != null) {
+            parameters.set(CameraUtil.KEY_PREVIEW_FORMAT, CameraUtil.getDefaultPreviewFormat());
+        }
+ 
         mHorizontalViewAngle = parameters.getHorizontalViewAngle();
         mVerticalViewAngle =  parameters.getVerticalViewAngle();
     }
