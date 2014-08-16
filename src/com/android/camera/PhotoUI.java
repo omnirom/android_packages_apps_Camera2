@@ -541,6 +541,9 @@ public class PhotoUI implements PieListener,
         boolean location = RecordLocationPreference.get(
                 prefs, mActivity.getContentResolver());
         mOnScreenIndicators.updateLocationIndicator(location);
+        int nbBurstShots =
+                Integer.valueOf(prefs.getString(CameraSettings.KEY_BURST_MODE, "1"));
+        updateBurstModeIcon(nbBurstShots);
     }
 
     public void setCameraState(int state) {
@@ -787,9 +790,9 @@ public class PhotoUI implements PieListener,
         mCountDownView.cancelCountDown();
     }
 
-    public void startCountDown(int sec, boolean playSound) {
+    public void startCountDown(int sec, boolean playSound, boolean withCallback, boolean withTitle, String title) {
         if (mCountDownView == null) initializeCountDown();
-        mCountDownView.startCountDown(sec, playSound);
+        mCountDownView.startCountDown(sec, playSound, withCallback, withTitle, title);
     }
 
     public void showPreferencesToast() {

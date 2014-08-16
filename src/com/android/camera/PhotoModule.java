@@ -169,10 +169,14 @@ public class PhotoModule
     // when the image is ready to be saved.
     private NamedImages mNamedImages;
 
+    private boolean mSnapFromRunnable;
+
     private Runnable mDoSnapRunnable = new Runnable() {
         @Override
         public void run() {
+            mSnapFromRunnable = true;
             onShutterButtonClick();
+            mSnapFromRunnable = false;
         }
     };
 
@@ -257,6 +261,9 @@ public class PhotoModule
 
     // True if all the parameters needed to start preview is ready.
     private boolean mCameraPreviewParamsReady = false;
+
+    // 0 if disabled
+    private int mSlowShutterTimeMillSecs;
 
     private MediaSaveService.OnMediaSavedListener mOnMediaSavedListener =
             new MediaSaveService.OnMediaSavedListener() {
@@ -1140,9 +1147,6 @@ public class PhotoModule
 
     @Override
     public void onShutterButtonClick() {
-        int nbBurstShots =
-                Integer.valueOf(mPreferences.getString(CameraSettings.KEY_BURST_MODE, "1"));
-
         if (mPaused || mUI.collapseCameraControls()
                 || (mCameraState == SWITCHING_CAMERA)
                 || (mCameraState == PREVIEW_STOPPED)) return;
@@ -1153,6 +1157,23 @@ public class PhotoModule
                     + mActivity.getStorageSpaceBytes());
             return;
         }
+        String timer = mPreferences.getString(
+                CameraSettings.KEY_TIMER,
+                mActivity.getString(R.string.pref_camera_timer_default));
+        boolean playSound = mPreferences.getString(CameraSettings.KEY_TIMER_SOUND_EFFECTS,
+                mActivity.getString(R.string.pref_camera_timer_sound_default))
+                .equals(mActivity.getString(R.string.setting_on_value));
+        String countdownTitle = mActivity.getResources().getString(R.string.count_down_title_text);
+
+        int timerSeconds = Integer.parseInt(timer);
+
+        // When shutter button is pressed, check whether the previous countdown is
+        // finished. If not, cancel the previous countdown and stop
+        if (timerSeconds > 0 && !mSnapFromRunnable && mUI.isCountingDown()) {
+            mUI.cancelCountDown();
+            return;
+        }
+
         Log.v(TAG, "onShutterButtonClick: mCameraState=" + mCameraState);
 
         if (mSceneMode == CameraUtil.SCENE_MODE_HDR) {
@@ -1170,34 +1191,19 @@ public class PhotoModule
             return;
         }
 
-        String timer = mPreferences.getString(
-                CameraSettings.KEY_TIMER,
-                mActivity.getString(R.string.pref_camera_timer_default));
-        boolean playSound = mPreferences.getString(CameraSettings.KEY_TIMER_SOUND_EFFECTS,
-                mActivity.getString(R.string.pref_camera_timer_sound_default))
-                .equals(mActivity.getString(R.string.setting_on_value));
-
-        int seconds = Integer.parseInt(timer);
-        // When shutter button is pressed, check whether the previous countdown is
-        // finished. If not, cancel the previous countdown and start a new one.
-        if (mUI.isCountingDown()) {
-            mUI.cancelCountDown();
-        }
-        if (seconds > 0) {
-            mUI.startCountDown(seconds, playSound);
+        // dont bother timer again in burst mode
+        if (timerSeconds > 0 && mBurstShotsDone == 0) {
+            mUI.startCountDown(timerSeconds, playSound, true, true, countdownTitle);
         } else {
-            mFocusManager.doSnap();
-            mBurstShotsDone++;
-
-            if (mBurstShotsDone == nbBurstShots) {
-                mBurstShotsDone = 0;
-                mBurstShotInProgress = false;
-                mSnapshotOnIdle = false;
-            } else if (mSnapshotOnIdle == false) {
-                // queue a new shot until we done all our shots
-                mSnapshotOnIdle = true;
-                mBurstShotInProgress = true;
+            if (mSlowShutterTimeMillSecs != 0) {
+                timerSeconds = mSlowShutterTimeMillSecs / 1000;
+                if (timerSeconds > 1) {
+                    countdownTitle = mActivity.getResources().getString(R.string.slow_shutter_title_text);
+                    mUI.startCountDown(timerSeconds, false, false, true, countdownTitle);
+                }
             }
+            mFocusManager.doSnap();
+            doHandleBurstShots();
         }
     }
 
@@ -1764,9 +1770,15 @@ public class PhotoModule
         }
 
         // Slow shutter
-        CameraSettings.setSlowShutter(mParameters, mPreferences.getString(CameraSettings.KEY_SLOW_SHUTTER,
-                mActivity.getString(R.string.pref_camera_slow_shutter_default)));
-
+        mSlowShutterTimeMillSecs = 0;
+        String slowShutterDefault = CameraSettings.getDefaultSlowShutterValue(mParameters);
+        if (slowShutterDefault != null) {
+            String value = mPreferences.getString(CameraSettings.KEY_SLOW_SHUTTER,
+                    slowShutterDefault);
+            CameraSettings.setSlowShutter(mParameters, mPreferences.getString(CameraSettings.KEY_SLOW_SHUTTER,
+                    slowShutterDefault));
+            mSlowShutterTimeMillSecs = CameraSettings.getSlowShutterMilliSecs(mActivity, value);
+        }
 
         if (CameraUtil.enableZSL()) {
             // Switch on ZSL mode
@@ -2009,9 +2021,9 @@ public class PhotoModule
 
     @Override
     public void onCountDownFinished() {
-        mSnapshotOnIdle = false;
         mFocusManager.doSnap();
         mFocusManager.onShutterUp();
+        doHandleBurstShots();
     }
 
     @Override
@@ -2119,4 +2131,20 @@ public class PhotoModule
     @Override
     public void onRestorePreferencesClicked() {}
 
+    private void doHandleBurstShots() {
+        int nbBurstShots =
+                Integer.valueOf(mPreferences.getString(CameraSettings.KEY_BURST_MODE, "1"));
+
+        mBurstShotsDone++;
+
+        if (mBurstShotsDone == nbBurstShots) {
+            mBurstShotsDone = 0;
+            mBurstShotInProgress = false;
+            mSnapshotOnIdle = false;
+        } else if (mSnapshotOnIdle == false) {
+            // queue a new shot until we done all our shots
+            mSnapshotOnIdle = true;
+            mBurstShotInProgress = true;
+        }
+    }
 }

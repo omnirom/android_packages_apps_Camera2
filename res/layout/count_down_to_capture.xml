@@ -27,9 +27,10 @@
     <TextView android:id="@+id/count_down_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingLeft="10dp"
-        android:paddingTop="20dp"
+        android:paddingRight="10dp"
+        android:paddingTop="10dp"
         android:textSize="20sp"
+        android:layout_gravity="right|top"
         android:textColor="@android:color/white"
         android:text="@string/count_down_title_text" />
 </com.android.camera.ui.CountDownView>
