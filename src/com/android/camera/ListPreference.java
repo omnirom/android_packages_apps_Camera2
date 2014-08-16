@@ -38,7 +38,7 @@ public class ListPreference extends CameraPreference {
     private static final String TAG = "ListPreference";
     private final String mKey;
     private String mValue;
-    private final CharSequence[] mDefaultValues;
+    private CharSequence[] mDefaultValues;
 
     private CharSequence[] mEntries;
     private CharSequence[] mEntryValues;
@@ -197,9 +197,16 @@ public class ListPreference extends CameraPreference {
     }
 
     public void print() {
-        Log.v(TAG, "Preference key=" + getKey() + ". value=" + getValue());
+        Log.d(TAG, "Preference key=" + getKey() + ". value=" + getValue());
         for (int i = 0; i < mEntryValues.length; i++) {
-            Log.v(TAG, "entryValues[" + i + "]=" + mEntryValues[i]);
+            Log.d(TAG, "entryValues[" + i + "]=" + mEntryValues[i]);
+        }
+    }
+
+    public void setDefaultValue(CharSequence value) {
+        if (value != null) {
+            mDefaultValues = new CharSequence[1];
+            mDefaultValues[0] = value;
         }
     }
 }

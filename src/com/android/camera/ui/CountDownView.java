@@ -38,6 +38,7 @@ public class CountDownView extends FrameLayout {
     private static final String TAG = "CAM_CountDownView";
     private static final int SET_TIMER_TEXT = 1;
     private TextView mRemainingSecondsView;
+    private TextView mTitleView;
     private int mRemainingSecs = 0;
     private OnCountDownFinishedListener mListener;
     private Animation mCountDownAnim;
@@ -45,6 +46,7 @@ public class CountDownView extends FrameLayout {
     private int mBeepTwice;
     private int mBeepOnce;
     private boolean mPlaySound;
+    private boolean mWithCallback = true;
     private final Handler mHandler = new MainHandler();
 
     public CountDownView(Context context, AttributeSet attrs) {
@@ -69,7 +71,9 @@ public class CountDownView extends FrameLayout {
         if (newVal == 0) {
             // Countdown has finished
             setVisibility(View.INVISIBLE);
-            mListener.onCountDownFinished();
+            if (mWithCallback) {
+                mListener.onCountDownFinished();
+            }
         } else {
             Locale locale = getResources().getConfiguration().locale;
             String localizedValue = String.format(locale, "%d", newVal);
@@ -96,19 +100,23 @@ public class CountDownView extends FrameLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
         mRemainingSecondsView = (TextView) findViewById(R.id.remaining_seconds);
+        mTitleView = (TextView) findViewById(R.id.count_down_title);
     }
 
     public void setCountDownFinishedListener(OnCountDownFinishedListener listener) {
         mListener = listener;
     }
 
-    public void startCountDown(int sec, boolean playSound) {
+    public void startCountDown(int sec, boolean playSound, boolean withCallback, boolean withTitle, String title) {
         if (sec <= 0) {
             Log.w(TAG, "Invalid input for countdown timer: " + sec + " seconds");
             return;
         }
         setVisibility(View.VISIBLE);
         mPlaySound = playSound;
+        mWithCallback = withCallback;
+        mTitleView.setVisibility(withTitle ? View.VISIBLE : View.GONE);
+        mTitleView.setText(title);
         remainingSecondsChanged(sec);
     }
 
