@@ -1764,9 +1764,11 @@ public class PhotoModule
         }
 
         // Slow shutter
-        CameraSettings.setSlowShutter(mParameters, mPreferences.getString(CameraSettings.KEY_SLOW_SHUTTER,
-                mActivity.getString(R.string.pref_camera_slow_shutter_default)));
-
+        String slowShutterDefault = CameraSettings.getDefaultSlowShutterValue(mParameters);
+        if (slowShutterDefault != null) {
+            CameraSettings.setSlowShutter(mParameters, mPreferences.getString(CameraSettings.KEY_SLOW_SHUTTER,
+                    slowShutterDefault));
+        }
 
         if (CameraUtil.enableZSL()) {
             // Switch on ZSL mode

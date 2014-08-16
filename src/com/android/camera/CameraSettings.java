@@ -236,7 +236,15 @@ public class CameraSettings {
             buildStorage(group, storage);
         }
         if (slowShutter != null) {
-            filterUnsupportedOptions(group, slowShutter, getSupportedSlowShutter(mParameters));
+            slowShutter.setDefaultValue(getDefaultSlowShutterValue(mParameters));
+            List<String> slowShutterParams = getSupportedSlowShutter(mParameters);
+            if (slowShutterParams != null) {
+                filterUnsupportedOptions(group, slowShutter, slowShutterParams);
+            } else {
+                if (getMaxExposureTime(mParameters) == -1) {
+                    removePreference(group, slowShutter.getKey());
+                }
+            }
         }
 
         int frontCameraId = CameraHolder.instance().getFrontCameraId();
@@ -600,14 +608,35 @@ public class CameraSettings {
         return null;
     }
 
+    public static int getMaxExposureTime(Parameters params) {
+        String p = params.get("max-exposure-time");
+        if (p != null) {
+            return Integer.valueOf(p);
+        }
+        return -1;
+    }
+
     public static void setSlowShutter(Parameters params, String value) {
         if (getSupportedSlowShutter(params) != null) {
             params.set("slow-shutter", value);
+        } else {
+            int maxExposureTime = getMaxExposureTime(params);
+            if (maxExposureTime != -1 ){
+                int exposureTime = Integer.valueOf(value);
+                if (exposureTime <= maxExposureTime) {
+                    params.set("exposure-time", value);
+                }
+            }
         }
     }
 
-    public static boolean isSlowShutterEnabled(Parameters params) {
-        return (getSupportedSlowShutter(params) != null) &&
-                !"slow-shutter-off".equals(params.get("slow-shutter"));
+    public static String getDefaultSlowShutterValue(Parameters params) {
+        List<String> slowShutterValues = getSupportedSlowShutter(params);
+        if (slowShutterValues != null && slowShutterValues.size() != 0) {
+            return slowShutterValues.get(0);
+        } else if (getMaxExposureTime(params) != -1) {
+            return "0";
+        }
+        return null;
     }
 }
