@@ -481,11 +481,11 @@ public class VideoUI implements PieRenderer.PieListener,
     }
 
     public void updateOnScreenIndicators(Parameters param, ComboPreferences prefs) {
-      mOnScreenIndicators.updateFlashOnScreenIndicator(param.getFlashMode());
-      boolean location = RecordLocationPreference.get(
+        mOnScreenIndicators.updateFlashOnScreenIndicator(param.getFlashMode());
+        boolean location = RecordLocationPreference.get(
               prefs, mActivity.getContentResolver());
-      mOnScreenIndicators.updateLocationIndicator(location);
-
+        mOnScreenIndicators.updateLocationIndicator(location);
+        mOnScreenIndicators.updateVideoHDROnScreenIndicator(param.getVideoHDRMode());
     }
 
     public void setAspectRatio(double ratio) {

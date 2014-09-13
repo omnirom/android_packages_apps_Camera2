@@ -41,6 +41,7 @@ public class OnScreenIndicators {
     private final ImageView mLocationIndicator;
     private final ImageView mTimerIndicator;
     private final ImageView mWBIndicator;
+    private final String mVideoHDROnValue;
 
     public OnScreenIndicators(Context ctx, View onScreenIndicatorsView) {
         TypedArray iconIds = ctx.getResources().obtainTypedArray(
@@ -63,6 +64,8 @@ public class OnScreenIndicators {
                 R.id.menu_timer_indicator);
         mWBIndicator = (ImageView) onScreenIndicatorsView.findViewById(
                 R.id.menu_wb_indicator);
+
+        mVideoHDROnValue = ctx.getResources().getString(R.string.pref_camera_video_hdr_value_on);
     }
 
     /**
@@ -185,6 +188,18 @@ public class OnScreenIndicators {
             mSceneIndicator.setImageResource(R.drawable.ic_indicator_sce_hdr);
         } else {
             mSceneIndicator.setImageResource(R.drawable.ic_indicator_sce_on);
+        }
+    }
+
+    public void updateVideoHDROnScreenIndicator(String value) {
+        if (mSceneIndicator == null) {
+            return;
+        }
+
+        if (value != null && value.equals(mVideoHDROnValue)) {
+            mSceneIndicator.setImageResource(R.drawable.ic_indicator_sce_hdr);
+        } else {
+            mSceneIndicator.setImageResource(R.drawable.ic_indicator_sce_off);
         }
     }
 

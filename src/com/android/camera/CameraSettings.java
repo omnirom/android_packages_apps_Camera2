@@ -74,6 +74,7 @@ public class CameraSettings {
     public static final String KEY_BURST_MODE = "pref_camera_burst_key";
     public static final String KEY_SLOW_SHUTTER = "pref_camera_slow_shutter";
     public static final String KEY_REDEYE_REDUCTION = "pref_camera_redeyereduction_key";
+    public static final String KEY_VIDEO_HDR = "pref_camera_video_hdr_key";
 
     public static final String EXPOSURE_DEFAULT_VALUE = "0";
 
@@ -184,6 +185,7 @@ public class CameraSettings {
         ListPreference storage = group.findPreference(KEY_STORAGE);
         ListPreference slowShutter = group.findPreference(KEY_SLOW_SHUTTER);
         ListPreference redeyeReduction = group.findPreference(KEY_REDEYE_REDUCTION);
+        ListPreference videoHdr = group.findPreference(KEY_VIDEO_HDR);
 
         // Since the screen could be loaded from different resources, we need
         // to check if the preference is available here
@@ -258,6 +260,12 @@ public class CameraSettings {
         if (cameraHdrPlus != null && (!ApiHelper.HAS_CAMERA_HDR_PLUS ||
                 !GcamHelper.hasGcamCapture() || isFrontCamera)) {
             removePreference(group, cameraHdrPlus.getKey());
+        }
+
+        if (videoHdr != null) {
+            if (!CameraUtil.isVideoHdrSupported(mParameters)) {
+                removePreference(group, videoHdr.getKey());
+            }
         }
     }
 
