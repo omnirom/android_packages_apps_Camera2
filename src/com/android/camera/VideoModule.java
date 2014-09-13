@@ -1586,6 +1586,9 @@ public class VideoModule implements CameraModule,
         // Set video size before recording starts
         CameraSettings.setEarlyVideoSize(mParameters, mProfile);
 
+        //Call Qcom related Camera Parameters
+        qcomSetCameraParameters();
+
         boolean flag = false;
         if (mPreviewing) {
             stopPreview();
@@ -1881,5 +1884,19 @@ public class VideoModule implements CameraModule,
     @Override
     public void onPreviewUIDestroyed() {
         stopPreview();
+    }
+
+    private void qcomSetCameraParameters(){
+        // add QCOM Parameters here
+
+        // Set Video HDR.
+        String videoHDR = mPreferences.getString(
+                CameraSettings.KEY_VIDEO_HDR,
+                mActivity.getString(R.string.pref_camera_video_hdr_default));
+        Log.v(TAG, "Video HDR Setting =" + videoHDR);
+        if (isSupported(videoHDR, mParameters.getSupportedVideoHDRModes())) {
+             mParameters.setVideoHDRMode(videoHDR);
+        } else
+             mParameters.setVideoHDRMode("off");
     }
 }
