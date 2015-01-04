@@ -73,6 +73,7 @@ public class Keys {
     public static final String KEY_HDR_PLUS_FLASH_MODE = "pref_hdr_plus_flash_mode";
     public static final String KEY_SHOULD_SHOW_SETTINGS_BUTTON_CLING =
             "pref_should_show_settings_button_cling";
+    public static final String KEY_STORAGE = "pref_camera_storage_key";
 
     /**
      * Set some number of defaults for the defined keys.
