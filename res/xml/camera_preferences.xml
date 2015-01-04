@@ -68,6 +68,9 @@
         android:defaultValue="false"
         android:key="pref_camera_exposure_compensation_key"
         android:title="@string/pref_camera_exposure_compensation" />
+    <ListPreference
+        android:key="pref_camera_storage_key"
+        android:title="@string/pref_camera_storage_title" />
   </PreferenceScreen>
 
   <!-- Google Help and feedback launcher -->
