@@ -3031,7 +3031,7 @@ public class CameraActivity extends QuickActivity
 
         // Sync the swipe preview with the right path
         if (mDataAdapter != null) {
-            mDataAdapter.flush();
+            mDataAdapter.clear();
             mDataAdapter.requestLoad(new Callback<Void>() {
                 @Override
                 public void onCallback(Void result) {

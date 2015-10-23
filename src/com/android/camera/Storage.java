@@ -46,7 +46,6 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 
 public class Storage {
-    public static final String JPEG_POSTFIX = ".jpg";
     public static final String DCIM =
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString();
     public static final String DIRECTORY = DCIM + "/Camera";
