@@ -23,9 +23,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
-import android.os.storage.StorageManager;
-import android.os.storage.StorageVolume;
-import android.os.Environment;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
@@ -150,7 +147,6 @@ public class CameraSettingsActivity extends FragmentActivity {
         private String mPrefKey;
         private boolean mHideAdvancedScreen;
         private boolean mGetSubPrefAsRoot = true;
-        private boolean mPreferencesRemoved = false;
 
         // Selected resolutions for the different cameras and sizes.
         private PictureSizes mPictureSizes;
@@ -215,13 +211,9 @@ public class CameraSettingsActivity extends FragmentActivity {
 
             final PreferenceScreen advancedScreen =
                     (PreferenceScreen) findPreference(PREF_CATEGORY_ADVANCED);
+
             if (!mHideAdvancedScreen) {
                 setPreferenceScreenIntent(advancedScreen);
-            }
-
-            ListPreference storage = (ListPreference) findPreference(Keys.KEY_STORAGE);
-            if (storage != null) {
-                buildStorage(getPreferenceScreen(), storage);
             }
 
             Preference helpPref = findPreference(PREF_LAUNCH_HELP);
@@ -305,7 +297,6 @@ public class CameraSettingsActivity extends FragmentActivity {
                 recursiveDelete(resolutions,
                         findPreference(Keys.KEY_VIDEO_QUALITY_FRONT));
             }
-            mPreferencesRemoved = true;
         }
 
         /**
@@ -523,42 +514,6 @@ public class CameraSettingsActivity extends FragmentActivity {
                     R.string.setting_summary_aspect_ratio_and_megapixels, numerator, denominator,
                     megaPixels);
             return result;
-        }
-
-        private void buildStorage(PreferenceGroup group, ListPreference storage) {
-            Context context = this.getActivity().getApplicationContext();
-            StorageManager sm = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
-            StorageVolume[] volumes = sm.getVolumeList();
-            List<String> entries = new ArrayList<String>(volumes.length);
-            List<String> entryValues = new ArrayList<String>(volumes.length);
-            int primary = 0;
-
-            for (int i = 0; i < volumes.length; i++) {
-                StorageVolume v = volumes[i];
-                // Hide unavailable volumes
-                if (sm.getVolumeState(v.getPath())
-                        .equals(Environment.MEDIA_MOUNTED)) {
-                    entries.add(v.getDescription(context));
-                    entryValues.add(v.getPath());
-                    if (v.isPrimary()) {
-                        primary = i;
-                    }
-                }
-            }
-
-            if (entries.size() < 2) {
-                // No need for storage setting
-                group.removePreference(storage);
-                return;
-            }
-            storage.setEntries(entries.toArray(new String[entries.size()]));
-            storage.setEntryValues(entryValues.toArray(new String[entryValues.size()]));
-
-            // Filter saved invalid value
-            if (storage.findIndexOfValue(storage.getValue()) < 0) {
-                // Default to the primary storage
-                storage.setValueIndex(primary);
-            }
         }
     }
 }
