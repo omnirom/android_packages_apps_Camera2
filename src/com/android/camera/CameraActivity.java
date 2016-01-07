@@ -47,7 +47,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.TextUtils;
@@ -252,7 +251,6 @@ public class CameraActivity extends QuickActivity
     private boolean mIsActivityRunning = false;
     private FatalErrorHandler mFatalErrorHandler;
     private boolean mHasCriticalPermissions;
-    private String mStoragePath;
 
     private final Uri[] mNfcPushUris = new Uri[1];
 
@@ -1822,7 +1820,6 @@ public class CameraActivity extends QuickActivity
         mCurrentModule.pause();
         mOrientationManager.pause();
         mPanoramaViewHelper.onPause();
-        mLocationManager.recordLocation(false);
 
         mLocalImagesObserver.setForegroundChangeListener(null);
         mLocalImagesObserver.setActivityPaused(true);
@@ -1966,8 +1963,6 @@ public class CameraActivity extends QuickActivity
         Profile profile = mProfiler.create("CameraActivity.resume").start();
         CameraPerformanceTracker.onEvent(CameraPerformanceTracker.ACTIVITY_RESUME);
         Log.v(TAG, "Build info: " + Build.DISPLAY);
-
-        setStoragePath();
         updateStorageSpaceAndHint(null);
 
         mLastLayoutOrientation = getResources().getConfiguration().orientation;
@@ -3004,45 +2999,5 @@ public class CameraActivity extends QuickActivity
 
         boolean showDetails = data.getAttributes().hasDetailedCaptureInfo();
         detailsMenuItem.setVisible(showDetails);
-    }
-
-    private boolean setStoragePath() {
-        String defaultStoragePath = Environment.getExternalStorageDirectory().toString();
-        String storagePath = mSettingsManager.getString(SettingsManager.SCOPE_GLOBAL,
-                            Keys.KEY_STORAGE, defaultStoragePath);
-        if (storagePath.equals(mStoragePath)) {
-            return false;
-        }
-
-        mStoragePath = storagePath;
-        Storage.setRoot(mStoragePath);
-
-        // e.g. storage set to external SD card that has been removed since last start
-        if (!mStoragePath.equals(defaultStoragePath)
-                && Storage.isValidStorage(Storage.generateDirectory()) != 0) {
-            Log.e(TAG, "setStoragePath =" + storagePath + " - invalid - reseting to default");
-            mStoragePath = defaultStoragePath;
-            Storage.setRoot(defaultStoragePath);
-            mSettingsManager.set(SettingsManager.SCOPE_GLOBAL,
-                            Keys.KEY_STORAGE, defaultStoragePath);
-        }
-
-        Log.i(TAG, "setStoragePath = " + mStoragePath);
-
-        // Sync the swipe preview with the right path
-        if (mDataAdapter != null) {
-            mDataAdapter.clear();
-            mDataAdapter.requestLoad(new Callback<Void>() {
-                @Override
-                public void onCallback(Void result) {
-                }
-            });
-        }
-
-        // Update the gallery app
-        Intent intent = new Intent("com.android.gallery3d.STORAGE_CHANGE");
-        intent.putExtra(Keys.KEY_STORAGE, mStoragePath);
-        sendBroadcast(intent);
-        return true;
     }
 }
