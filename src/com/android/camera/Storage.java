@@ -46,10 +46,6 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 
 public class Storage {
-    public static final String DCIM =
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString();
-    public static final String DIRECTORY = DCIM + "/Camera";
-    public static final File DIRECTORY_FILE = new File(DIRECTORY);
     public static final String JPEG_POSTFIX = ".jpg";
     public static final String GIF_POSTFIX = ".gif";
     public static final long UNAVAILABLE = -1L;
@@ -358,6 +354,7 @@ public class Storage {
     private static long writeFile(String path, byte[] data) {
         FileOutputStream out = null;
         try {
+            Log.i(TAG, "write data " + path);
             out = new FileOutputStream(path);
             out.write(data);
             return data.length;
@@ -428,16 +425,8 @@ public class Storage {
         return generateDCIM() + "/Camera";
     }
 
-    public static String generateRawDirectory() {
-        return generateDirectory() + "/raw";
-    }
-
-    public static String generateBucketId() {
-        return String.valueOf(generateBucketIdInt());
-    }
-
-    public static int generateBucketIdInt() {
-        return generateDirectory().toLowerCase().hashCode();
+    public static String generateDirectory(String root) {
+        return new File(root, Environment.DIRECTORY_DCIM).getAbsolutePath() + "/Camera";
     }
 
     private static String generateFilepath(String title, String mimeType) {
@@ -528,7 +517,7 @@ public class Storage {
         }
 
         try {
-            StatFs stat = new StatFs(generateDirectory());
+            StatFs stat = new StatFs(folder);
             return stat.getAvailableBlocks() * (long) stat.getBlockSize();
         } catch (Exception e) {
             Log.i(TAG, "Fail to access external storage", e);

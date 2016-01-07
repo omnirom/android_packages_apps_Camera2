@@ -37,6 +37,7 @@ import android.view.MenuItem;
 
 import com.android.camera.FatalErrorHandler;
 import com.android.camera.FatalErrorHandlerImpl;
+import com.android.camera.Storage;
 import com.android.camera.debug.Log;
 import com.android.camera.device.CameraId;
 import com.android.camera.one.OneCamera.Facing;
@@ -54,6 +55,7 @@ import com.android.camera2.R;
 import com.android.ex.camera2.portability.CameraAgentFactory;
 import com.android.ex.camera2.portability.CameraDeviceInfo;
 
+import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -538,6 +540,12 @@ public class CameraSettingsActivity extends FragmentActivity {
                 // Hide unavailable volumes
                 if (sm.getVolumeState(v.getPath())
                         .equals(Environment.MEDIA_MOUNTED)) {
+                    String dir = Storage.generateDirectory(v.getPath());
+                    File dirFile = new File(dir);
+                    dirFile.mkdirs();
+                    if (!dirFile.canWrite()) {
+                        continue;
+                    }
                     entries.add(v.getDescription(context));
                     entryValues.add(v.getPath());
                     if (v.isPrimary()) {
@@ -559,6 +567,7 @@ public class CameraSettingsActivity extends FragmentActivity {
                 // Default to the primary storage
                 storage.setValueIndex(primary);
             }
+            storage.setSummary(storage.getEntry());
         }
     }
 }

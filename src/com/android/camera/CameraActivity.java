@@ -1337,7 +1337,8 @@ public class CameraActivity extends QuickActivity
 
     private void removeItemAt(int index) {
         mDataAdapter.removeAt(index);
-        if (mDataAdapter.getTotalNumber() > 1) {
+        final int placeholders = mSecureCamera ? 1 : 0;
+        if (mDataAdapter.getTotalNumber() > placeholders) {
             showUndoDeletionBar();
         } else {
             // If camera preview is the only view left in filmstrip,
@@ -1859,6 +1860,8 @@ public class CameraActivity extends QuickActivity
     @Override
     public void onResumeTasks() {
         mPaused = false;
+
+        setStoragePath();
         checkPermissions();
         if (!mHasCriticalPermissions) {
             Log.v(TAG, "onResume: Missing critical permissions.");
@@ -1923,14 +1926,6 @@ public class CameraActivity extends QuickActivity
                     mDataAdapter);
             if (!mSecureCamera) {
                 mFilmstripController.setDataAdapter(mDataAdapter);
-                if (!isCaptureIntent()) {
-                    mDataAdapter.requestLoad(new Callback<Void>() {
-                        @Override
-                        public void onCallback(Void result) {
-                            fillTemporarySessions();
-                        }
-                    });
-                }
             } else {
                 // Put a lock placeholder as the last image by setting its date to
                 // 0.
@@ -1966,8 +1961,6 @@ public class CameraActivity extends QuickActivity
         Profile profile = mProfiler.create("CameraActivity.resume").start();
         CameraPerformanceTracker.onEvent(CameraPerformanceTracker.ACTIVITY_RESUME);
         Log.v(TAG, "Build info: " + Build.DISPLAY);
-
-        setStoragePath();
         updateStorageSpaceAndHint(null);
 
         mLastLayoutOrientation = getResources().getConfiguration().orientation;
@@ -2388,7 +2381,8 @@ public class CameraActivity extends QuickActivity
             UsageStatistics.instance().storageWarning(storageSpace);
 
             // Disable all user interactions,
-            mCameraAppUI.setDisableAllUserInteractions(true);
+            // maxwen - and how the hell should you change back to internal storage then?
+            //mCameraAppUI.setDisableAllUserInteractions(true);
         } else if (mStorageHint != null) {
             mStorageHint.cancel();
             mStorageHint = null;
@@ -3029,14 +3023,16 @@ public class CameraActivity extends QuickActivity
 
         Log.i(TAG, "setStoragePath = " + mStoragePath);
 
-        // Sync the swipe preview with the right path
         if (mDataAdapter != null) {
-            mDataAdapter.clear();
-            mDataAdapter.requestLoad(new Callback<Void>() {
-                @Override
-                public void onCallback(Void result) {
-                }
-            });
+            if (!mSecureCamera) {
+                mDataAdapter.clear();
+                mDataAdapter.requestLoad(new Callback<Void>() {
+                    @Override
+                    public void onCallback(Void result) {
+                        fillTemporarySessions();
+                    }
+                });
+            }
         }
 
         // Update the gallery app

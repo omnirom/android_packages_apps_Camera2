@@ -160,9 +160,6 @@ public class OneCameraImpl extends AbstractOneCamera {
         TAP_TO_FOCUS
     }
 
-    /** Directory to store raw DNG files in. */
-    private static final File RAW_DIRECTORY = new File(Storage.DIRECTORY, "DNG");
-
     /** Current CONTROL_AF_MODE request to Camera2 API. */
     private int mControlAFMode = CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE;
     /** Last OneCamera.AutoFocusState reported. */
@@ -758,6 +755,8 @@ public class OneCameraImpl extends AbstractOneCamera {
      * image and capture data
      */
     private void onCaptureCompleted(InFlightCapture capture) {
+        /** Directory to store raw DNG files in. */
+        final File RAW_DIRECTORY = new File(Storage.generateDirectory(), "DNG");
 
         // Experimental support for writing RAW. We do not have a usable JPEG
         // here, so we don't use the usual capture session mechanism and instead
